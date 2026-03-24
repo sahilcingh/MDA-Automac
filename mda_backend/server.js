@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const sql = require('mssql');
 const cors = require('cors');
@@ -57,6 +58,55 @@ app.post('/login', async (req, res) => {
     } catch (err) {
         console.error('Database connection failed:', err);
         res.status(500).json({ success: false, message: 'Server error' });
+    }
+});
+
+// --- NEW ROUTE: Fetch Stock Report (Colour Wise) ---
+app.get('/stock-color-report', async (req, res) => {
+    try {
+        // 1. Connect to the database
+        const pool = await sql.connect(dbConfig);
+        
+        // 2. Query the exact data you showed in the screenshot
+        // We filter by F2 = 'VehStk_CWRpt' to only get the colour report data
+        const result = await pool.request().query(`
+            SELECT 
+                F3 AS modelName, 
+                F5 AS colorName, 
+                F6 AS stockCount 
+            FROM YOUR_TABLE_NAME 
+            WHERE F2 = 'VehStk_CWRpt' AND F3 IS NOT NULL
+        `);
+
+        // 3. Reformat the flat SQL data into the grouped structure Flutter needs
+        const groupedData = {};
+        
+        result.recordset.forEach(row => {
+            const model = row.modelName;
+            const color = row.colorName;
+            const count = parseInt(row.stockCount, 10) || 0; // Ensures it's a clean number
+
+            // If we haven't seen this motorcycle model yet, create a new entry for it
+            if (!groupedData[model]) {
+                groupedData[model] = { 
+                    model: model, 
+                    totalStock: 0, 
+                    colors: [] 
+                };
+            }
+            
+            // Add the color and update the total math
+            groupedData[model].colors.push({ name: color, count: count });
+            groupedData[model].totalStock += count;
+        });
+
+        // 4. Convert our grouped object back into an array and send it to the app
+        const finalArray = Object.values(groupedData);
+        res.json(finalArray);
+
+    } catch (err) {
+        console.error('Database query error:', err);
+        res.status(500).json({ error: 'Failed to fetch stock data' });
     }
 });
 

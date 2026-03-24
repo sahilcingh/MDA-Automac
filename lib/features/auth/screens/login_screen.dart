@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:convert'; // For converting data to JSON
-import 'package:http/http.dart' as http; // The new network package
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
-// Make sure this path matches your folder structure
 import '../../dashboard/screens/dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -29,33 +28,28 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // --- THE NEW REAL LOGIN FUNCTION ---
   Future<void> _handleLogin() async {
-    // 1. Grab the text from the boxes and remove extra spaces
     final clientId = _clientIdController.text.trim();
     final userName = _userNameController.text.trim();
     final password = _passwordController.text.trim();
 
-    // 2. Check if the user left anything blank
     if (clientId.isEmpty || userName.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please fill in all fields to login.'),
-          backgroundColor: Color(0xFFFF7A00), // Our brand orange
+          backgroundColor: Color(0xFFFF7A00),
         ),
       );
       return;
     }
 
     setState(() {
-      _isLoading = true; // Show the loading spinner
+      _isLoading = true;
     });
 
     try {
-      // 3. Set the API URL (10.0.2.2 is the Android emulator's way to reach your computer)
-      final url = Uri.parse('http://10.0.2.2:3000/login');
+      final url = Uri.parse('https://mda-automac.onrender.com/login');
 
-      // 4. Send the request to the Node.js Server
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
@@ -66,22 +60,16 @@ class _LoginScreenState extends State<LoginScreen> {
         }),
       );
 
-      // Make sure the user didn't close the app while we were waiting
       if (!mounted) return;
 
-      // 5. Read the server's response
       final responseData = jsonDecode(response.body);
 
       if (response.statusCode == 200 && responseData['success'] == true) {
-        // 🎉 SUCCESS! The database found a match.
-        // Optional: You can save the user's role (responseData['role']) here later!
-
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const DashboardScreen()),
         );
       } else {
-        // ❌ FAILED! Wrong password, wrong user, etc.
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -92,7 +80,6 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } catch (error) {
-      // ⚠️ ERROR! Could not reach the server at all
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -101,7 +88,6 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
     } finally {
-      // Always turn off the loading spinner, pass or fail
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -126,9 +112,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   height: 80,
                   child: FittedBox(
                     fit: BoxFit.contain,
-                    child: Image.asset(
-                      'assets/mdaautomaclogo.png',
-                    ), // Using your logo name
+                    child: Image.asset('assets/mdaautomaclogo.png'),
                   ),
                 ),
                 const SizedBox(height: 40),
@@ -145,7 +129,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Sign in to continue to your dashboard',
+                  '',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     color: const Color(0xFF475569),
@@ -193,9 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 24),
 
                 ElevatedButton(
-                  onPressed: _isLoading
-                      ? null
-                      : _handleLogin, // Triggers our new real function
+                  onPressed: _isLoading ? null : _handleLogin,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF1E3A8A),
                     disabledBackgroundColor: const Color(

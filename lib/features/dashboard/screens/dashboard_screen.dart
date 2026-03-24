@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-// Make sure this path matches your folder structure!
+import '../../sales/screens/sales_screen.dart';
 import '../../auth/screens/login_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -10,7 +9,7 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE0F2FE), // Cohesive Light Blue Theme
+      backgroundColor: const Color(0xFFE0F2FE),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -22,7 +21,6 @@ class DashboardScreen extends StatelessWidget {
             size: 20,
           ),
           onPressed: () {
-            // FIXED: Acts as a Logout button, replacing the Dashboard with the Login screen
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const LoginScreen()),
@@ -31,7 +29,7 @@ class DashboardScreen extends StatelessWidget {
         ),
         title: SizedBox(
           height: 40,
-          child: Image.asset('assets/mdasoftlogo.png'), // Using your new asset
+          child: Image.asset('assets/mdasoftlogo.png'),
         ),
       ),
       body: SafeArea(
@@ -42,11 +40,10 @@ class DashboardScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 32),
 
-              // Welcome Header
               Text(
                 'Select Workspace',
                 style: GoogleFonts.plusJakartaSans(
-                  color: const Color(0xFF1E3A8A), // Deep Navy
+                  color: const Color(0xFF1E3A8A),
                   fontSize: 28,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.5,
@@ -54,9 +51,9 @@ class DashboardScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Choose a module to continue managing your workflow.',
+                '',
                 style: GoogleFonts.inter(
-                  color: const Color(0xFF475569), // Slate Gray
+                  color: const Color(0xFF475569),
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                   height: 1.5,
@@ -64,7 +61,6 @@ class DashboardScreen extends StatelessWidget {
               ),
               const SizedBox(height: 40),
 
-              // Module Cards
               Expanded(
                 child: ListView(
                   physics: const BouncingScrollPhysics(),
@@ -72,12 +68,17 @@ class DashboardScreen extends StatelessWidget {
                     _buildModuleCard(
                       context: context,
                       title: 'Sales',
-                      subtitle: 'Leads, pipelines, and closing',
+                      subtitle: '',
                       icon: Icons.trending_up_rounded,
-                      iconColor: const Color(0xFF3B82F6), // Blue
+                      iconColor: const Color(0xFF3B82F6),
                       onTap: () {
-                        // TODO: Navigate to Sales Module
-                        debugPrint('Navigating to Sales...');
+                        // THIS IS THE NEW NAVIGATION CODE
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SalesScreen(),
+                          ),
+                        );
                       },
                     ),
                     const SizedBox(height: 16),
@@ -85,13 +86,10 @@ class DashboardScreen extends StatelessWidget {
                     _buildModuleCard(
                       context: context,
                       title: 'Service',
-                      subtitle: 'Support tickets and maintenance',
+                      subtitle: '',
                       icon: Icons.build_circle_outlined,
-                      iconColor: const Color(
-                        0xFFFF7A00,
-                      ), // Orange (matches splash screen comet)
+                      iconColor: const Color(0xFFFF7A00),
                       onTap: () {
-                        // TODO: Navigate to Service Module
                         debugPrint('Navigating to Service...');
                       },
                     ),
@@ -100,11 +98,10 @@ class DashboardScreen extends StatelessWidget {
                     _buildModuleCard(
                       context: context,
                       title: 'Account',
-                      subtitle: 'Billing, profiles, and settings',
+                      subtitle: '',
                       icon: Icons.manage_accounts_outlined,
-                      iconColor: const Color(0xFF10B981), // Emerald Green
+                      iconColor: const Color(0xFF10B981),
                       onTap: () {
-                        // TODO: Navigate to Account Module
                         debugPrint('Navigating to Account...');
                       },
                     ),
@@ -118,7 +115,6 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  // Reusable widget for creating beautiful, consistent cards
   Widget _buildModuleCard({
     required BuildContext context,
     required String title,
@@ -151,7 +147,6 @@ class DashboardScreen extends StatelessWidget {
             padding: const EdgeInsets.all(20.0),
             child: Row(
               children: [
-                // Icon inside a colored circular container
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -162,10 +157,11 @@ class DashboardScreen extends StatelessWidget {
                 ),
                 const SizedBox(width: 20),
 
-                // Text Column
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment:
+                        MainAxisAlignment.center, // Vertically centers the text
                     children: [
                       Text(
                         title,
@@ -175,20 +171,22 @@ class DashboardScreen extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF64748B),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
+                      // Only render the subtitle spacing and text if a subtitle exists
+                      if (subtitle.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          subtitle,
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF64748B),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),
 
-                // Forward Arrow Indicator
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
