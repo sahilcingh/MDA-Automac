@@ -1,0 +1,26 @@
+# Dependency directories (CRITICAL: Do not upload this!)
+node_modules/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Environment variables (For future security)
+.env
+.env.test
+
+# OS generated files (Mac & Windows junk files)
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:convert'; // For converting data to JSON
+import 'package:http/http.dart' as http; // The new network package
 
-// Make sure this import path matches your exact folder structure!
+// Make sure this path matches your folder structure
 import '../../dashboard/screens/dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -17,8 +19,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
 
   bool _isPasswordVisible = false;
-
-  // NEW: State variable to track if our "fake" login is processing
   bool _isLoading = false;
 
   @override
@@ -29,24 +29,85 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // NEW: A function to simulate a fake login process
-  Future<void> _handleFakeLogin() async {
-    // 1. Show the loading spinner
+  // --- THE NEW REAL LOGIN FUNCTION ---
+  Future<void> _handleLogin() async {
+    // 1. Grab the text from the boxes and remove extra spaces
+    final clientId = _clientIdController.text.trim();
+    final userName = _userNameController.text.trim();
+    final password = _passwordController.text.trim();
+
+    // 2. Check if the user left anything blank
+    if (clientId.isEmpty || userName.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill in all fields to login.'),
+          backgroundColor: Color(0xFFFF7A00), // Our brand orange
+        ),
+      );
+      return;
+    }
+
     setState(() {
-      _isLoading = true;
+      _isLoading = true; // Show the loading spinner
     });
 
-    // 2. Wait for 1.5 seconds to simulate a network request to a database
-    await Future.delayed(const Duration(milliseconds: 1500));
+    try {
+      // 3. Set the API URL (10.0.2.2 is the Android emulator's way to reach your computer)
+      final url = Uri.parse('http://10.0.2.2:3000/login');
 
-    // Make sure the widget is still on screen before navigating
-    if (!mounted) return;
+      // 4. Send the request to the Node.js Server
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'clientId': clientId,
+          'userName': userName,
+          'password': password,
+        }),
+      );
 
-    // 3. Navigate to the Dashboard (accepts whatever garbage is in the fields)
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const DashboardScreen()),
-    );
+      // Make sure the user didn't close the app while we were waiting
+      if (!mounted) return;
+
+      // 5. Read the server's response
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && responseData['success'] == true) {
+        // 🎉 SUCCESS! The database found a match.
+        // Optional: You can save the user's role (responseData['role']) here later!
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const DashboardScreen()),
+        );
+      } else {
+        // ❌ FAILED! Wrong password, wrong user, etc.
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              responseData['message'] ?? 'Login failed. Please try again.',
+            ),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } catch (error) {
+      // ⚠️ ERROR! Could not reach the server at all
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Cannot connect to server. Is Node.js running?'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    } finally {
+      // Always turn off the loading spinner, pass or fail
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -61,17 +122,17 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // 1. Company Logo
                 SizedBox(
                   height: 80,
                   child: FittedBox(
                     fit: BoxFit.contain,
-                    child: Image.asset('assets/mdasoftlogo.png'),
+                    child: Image.asset(
+                      'assets/mdaautomaclogo.png',
+                    ), // Using your logo name
                   ),
                 ),
                 const SizedBox(height: 40),
 
-                // 2. Welcome Text
                 Text(
                   'Welcome Back',
                   textAlign: TextAlign.center,
@@ -94,7 +155,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 40),
 
-                // 3. Input Fields
                 _buildTextField(
                   controller: _clientIdController,
                   label: 'Client ID',
@@ -116,7 +176,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   isPassword: true,
                 ),
 
-                // 4. Forgot Password Button
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
@@ -133,10 +192,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // 5. Sign In Button
                 ElevatedButton(
-                  // Disable the button if it's currently loading
-                  onPressed: _isLoading ? null : _handleFakeLogin,
+                  onPressed: _isLoading
+                      ? null
+                      : _handleLogin, // Triggers our new real function
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF1E3A8A),
                     disabledBackgroundColor: const Color(
@@ -150,7 +209,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   child: _isLoading
-                      // Show a spinner if loading is true
                       ? const SizedBox(
                           height: 24,
                           width: 24,
@@ -159,7 +217,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             strokeWidth: 2.5,
                           ),
                         )
-                      // Otherwise show the normal text
                       : Text(
                           'Sign In',
                           style: GoogleFonts.plusJakartaSans(
@@ -176,7 +233,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // Helper method to build consistent, clean text fields
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
@@ -186,7 +242,6 @@ class _LoginScreenState extends State<LoginScreen> {
     return TextFormField(
       controller: controller,
       obscureText: isPassword && !_isPasswordVisible,
-      // Disable text input while the fake login is processing
       enabled: !_isLoading,
       style: GoogleFonts.inter(
         color: const Color(0xFF0F172A),
