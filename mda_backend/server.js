@@ -9,13 +9,13 @@ app.use(express.json()); // Allows the server to read JSON from Flutter
 // 1. AWS Database Configuration
 // Replace these placeholders with your actual AWS RDS credentials
 const dbConfig = {
-    user: 'ADMIN',
-    password: 'gRZ0&-kH#X',
-    server: 'mda.ct1ynylbmkkv.ap-south-1.rds.amazonaws.com', 
-    database: 'AutoAPP',
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    server: process.env.DB_SERVER, 
+    database: process.env.DB_NAME, 
     options: {
-        encrypt: true,
-        trustServerCertificate: true
+        encrypt: true, 
+        trustServerCertificate: true 
     }
 };
 
