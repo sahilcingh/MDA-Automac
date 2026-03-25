@@ -28,17 +28,58 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  // Helper method to show modern popups
+  void _showErrorPopup(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            title,
+            style: GoogleFonts.plusJakartaSans(
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF1E3A8A),
+            ),
+          ),
+          content: Text(
+            message,
+            style: GoogleFonts.inter(
+              color: const Color(0xFF475569),
+              fontSize: 15,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the popup
+              },
+              child: Text(
+                'OK',
+                style: GoogleFonts.inter(
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF3B82F6),
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _handleLogin() async {
     final clientId = _clientIdController.text.trim();
     final userName = _userNameController.text.trim();
     final password = _passwordController.text.trim();
 
     if (clientId.isEmpty || userName.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fill in all fields to login.'),
-          backgroundColor: Color(0xFFFF7A00),
-        ),
+      _showErrorPopup(
+        'Missing Information',
+        'Please fill in all fields to login.',
       );
       return;
     }
@@ -70,22 +111,17 @@ class _LoginScreenState extends State<LoginScreen> {
           MaterialPageRoute(builder: (context) => const DashboardScreen()),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              responseData['message'] ?? 'Login failed. Please try again.',
-            ),
-            backgroundColor: Colors.redAccent,
-          ),
+        _showErrorPopup(
+          'Login Failed',
+          responseData['message'] ??
+              'Please check your credentials and try again.',
         );
       }
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Cannot connect to server. Is Node.js running?'),
-          backgroundColor: Colors.redAccent,
-        ),
+      _showErrorPopup(
+        'Connection Error',
+        'Cannot connect to the server. Please check your internet connection or try again later.',
       );
     } finally {
       if (mounted) {
@@ -99,6 +135,9 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // --- THIS IS THE MAGIC LINE THAT FREEZES THE SCREEN ---
+      resizeToAvoidBottomInset: false,
+      // ------------------------------------------------------
       backgroundColor: const Color(0xFFE0F2FE),
       body: SafeArea(
         child: Center(

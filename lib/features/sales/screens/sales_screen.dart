@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'stock_color_report_screen.dart';
+import 'daily_report_screen.dart';
 
 class SalesScreen extends StatelessWidget {
   const SalesScreen({Key? key}) : super(key: key);
@@ -102,8 +103,15 @@ class SalesScreen extends StatelessWidget {
                     icon: report['icon'],
                     iconColor: report['color'],
                     onTap: () {
-                      // THIS IS THE UPDATED NAVIGATION ROUTING
-                      if (index == 1) {
+                      // --- UPDATED NAVIGATION ROUTING ---
+                      if (index == 0) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const DailyReportScreen(),
+                          ),
+                        );
+                      } else if (index == 1) {
                         Navigator.push(
                           context,
                           MaterialPageRoute(

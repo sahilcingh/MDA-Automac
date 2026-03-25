@@ -105,6 +105,59 @@ app.get('/stock-color-report', async (req, res) => {
     }
 });
 
+// --- NEW ROUTE: Fetch Daily Sales & Challan Report ---
+app.get('/daily-report', async (req, res) => {
+    try {
+        const pool = await sql.connect(dbConfig);
+        
+        const result = await pool.request().query(`
+            SELECT F4 AS yearType, F3 AS counts, F5 AS amounts 
+            FROM Auto_Misc_Krishna 
+            WHERE F2 = 'VehSLScr_Rpt' AND F4 IN ('A-1', 'A-2')
+        `);
+
+        const reportList = [];
+        
+        // Loop through the A-1 (Current) and A-2 (Previous) rows
+        result.recordset.forEach(row => {
+            // Split the comma-separated strings into arrays
+            const counts = row.counts ? row.counts.split(',') : ['0','0','0','0','0','0'];
+            const amounts = row.amounts ? row.amounts.split(',') : ['0','0','0','0','0','0'];
+            
+            const yearLabel = row.yearType === 'A-1' ? 'Current Year' : 'Previous Year';
+
+            // 1. Create the Quantity (No. of items) Row
+            reportList.push({
+                metric: `${yearLabel} (Qty)`,
+                todayChallan: counts[0] || '0',
+                monthChallan: counts[1] || '0',
+                yearChallan: counts[2] || '0',
+                todaySale: counts[3] || '0',
+                monthSale: counts[4] || '0',
+                yearSale: counts[5] || '0'
+            });
+
+            // 2. Create the Amount (Value) Row
+            reportList.push({
+                metric: `${yearLabel} (Value)`,
+                // We parse floats and fix to 2 decimals for clean currency formatting
+                todayChallan: parseFloat(amounts[0] || 0).toFixed(2),
+                monthChallan: parseFloat(amounts[1] || 0).toFixed(2),
+                yearChallan: parseFloat(amounts[2] || 0).toFixed(2),
+                todaySale: parseFloat(amounts[3] || 0).toFixed(2),
+                monthSale: parseFloat(amounts[4] || 0).toFixed(2),
+                yearSale: parseFloat(amounts[5] || 0).toFixed(2)
+            });
+        });
+
+        res.json(reportList);
+
+    } catch (err) {
+        console.error('Database query error:', err);
+        res.status(500).json({ error: 'Failed to fetch daily report' });
+    }
+});
+
 // 3. Start the Server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

@@ -41,7 +41,7 @@ class DashboardScreen extends StatelessWidget {
               const SizedBox(height: 32),
 
               Text(
-                'Select Workspace',
+                'Select Report',
                 style: GoogleFonts.plusJakartaSans(
                   color: const Color(0xFF1E3A8A),
                   fontSize: 28,

@@ -13,18 +13,17 @@ class StockColorReportScreen extends StatefulWidget {
 
 class _StockColorReportScreenState extends State<StockColorReportScreen> {
   List<Map<String, dynamic>> _liveData = [];
-  bool _isLoading = true; // Controls the loading spinner
+  bool _isLoading = true;
   String _errorMessage = '';
 
   @override
   void initState() {
     super.initState();
-    _fetchStockData(); // Fetch data the moment the screen loads
+    _fetchStockData();
   }
 
   Future<void> _fetchStockData() async {
     try {
-      // REPLACE THIS with your actual Render URL!
       final url = Uri.parse(
         'https://mda-automac.onrender.com/stock-color-report',
       );
@@ -32,11 +31,9 @@ class _StockColorReportScreenState extends State<StockColorReportScreen> {
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
-        // Decode the JSON from Node.js
         final List<dynamic> decodedData = json.decode(response.body);
 
         setState(() {
-          // Convert the dynamic list into our strictly typed map list
           _liveData = decodedData
               .map((item) => item as Map<String, dynamic>)
               .toList();
@@ -58,7 +55,6 @@ class _StockColorReportScreenState extends State<StockColorReportScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Calculate total stock for the bottom bar
     int grandTotal = _liveData.fold(
       0,
       (sum, item) => sum + (item['totalStock'] as int),
@@ -102,13 +98,34 @@ class _StockColorReportScreenState extends State<StockColorReportScreen> {
             ),
             child: Column(
               children: [
+                // --- THE FIX: Wrapped in Expanded and FittedBox ---
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Date : $currentDate', style: _headerStyle()),
-                    Text('Time : $currentTime', style: _headerStyle()),
+                    Expanded(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Date : $currentDate',
+                          style: _headerStyle(),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16), // Adds a safe gap between them
+                    Expanded(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          'Time : $currentTime',
+                          style: _headerStyle(),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
+                // --------------------------------------------------
                 const Divider(color: Colors.white38, height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -212,6 +229,8 @@ class _StockColorReportScreenState extends State<StockColorReportScreen> {
             collapsedBackgroundColor: const Color(0xFF3B82F6),
             iconColor: const Color(0xFF3B82F6),
             collapsedIconColor: Colors.white,
+            textColor: const Color(0xFF3B82F6),
+            collapsedTextColor: Colors.white,
             title: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -224,6 +243,7 @@ class _StockColorReportScreenState extends State<StockColorReportScreen> {
                     ),
                   ),
                 ),
+                const SizedBox(width: 8), // Added buffer here too just in case!
                 Text(
                   item['totalStock'].toString(),
                   style: GoogleFonts.inter(
@@ -245,12 +265,14 @@ class _StockColorReportScreenState extends State<StockColorReportScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            colorItem['name'],
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFFEF4444),
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13,
+                          Expanded(
+                            child: Text(
+                              colorItem['name'],
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFFEF4444),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
                             ),
                           ),
                           Text(
