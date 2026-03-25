@@ -170,6 +170,32 @@ app.get('/daily-report', async (req, res) => {
     }
 });
 
+// --- NEW ROUTE: MODEL WISE STOCK REPORT ---
+app.get('/model-wise-stock', async (req, res) => {
+    try {
+        const pool = await sql.connect(dbConfig);
+        
+        // IMPORTANT: We need your exact SQL query here!
+        // This is a placeholder guessing how your Auto_Misc_Krishna table is structured.
+        const result = await pool.request().query(`
+            SELECT 
+                F3 AS modelName, 
+                F4 AS opening, 
+                F5 AS purchase, 
+                F6 AS challan, 
+                F7 AS sale, 
+                F8 AS closing 
+            FROM Auto_Misc_Krishna 
+            WHERE F2 = 'VehStk_ModelRpt' -- We need the exact F2 string you use for this report
+              AND F3 IS NOT NULL
+        `);
+
+        res.json(result.recordset);
+    } catch (err) {
+        console.error('Database query error:', err);
+        res.status(500).json({ error: 'Failed to fetch model wise stock report' });
+    }
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

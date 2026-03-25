@@ -2,50 +2,48 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'stock_color_report_screen.dart';
 import 'daily_report_screen.dart';
+import 'model_wise_stock_screen.dart'; // <--- 1. NEW IMPORT ADDED HERE
 
 class SalesScreen extends StatelessWidget {
   const SalesScreen({Key? key}) : super(key: key);
 
-  // We define your reports here in a list so it's easy to add more later!
   final List<Map<String, dynamic>> _reports = const [
     {
       'title': 'Daily Report',
       'icon': Icons.analytics_outlined,
-      'color': Color(0xFF3B82F6), // Blue
+      'color': Color(0xFF3B82F6),
     },
     {
       'title': 'Stock Report (Model / Colour Wise)',
       'icon': Icons.palette_outlined,
-      'color': Color(0xFF10B981), // Green
+      'color': Color(0xFF10B981),
     },
     {
       'title': 'Stock Report (Model Wise)',
-      'icon': Icons.two_wheeler_rounded, // Motorcycle icon!
-      'color': Color(0xFFF59E0B), // Orange
+      'icon': Icons.two_wheeler_rounded,
+      'color': Color(0xFFF59E0B),
     },
     {
       'title': 'Sub Dealer / Branch Wise Report',
       'icon': Icons.storefront_outlined,
-      'color': Color(0xFF8B5CF6), // Purple
+      'color': Color(0xFF8B5CF6),
     },
     {
       'title': 'Challan Pending Report',
       'icon': Icons.pending_actions_rounded,
-      'color': Color(0xFFEF4444), // Red
+      'color': Color(0xFFEF4444),
     },
     {
       'title': 'Financer Wise Report',
       'icon': Icons.account_balance_outlined,
-      'color': Color(0xFF14B8A6), // Teal
+      'color': Color(0xFF14B8A6),
     },
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(
-        0xFFE0F2FE,
-      ), // Matching your dashboard background
+      backgroundColor: const Color(0xFFE0F2FE),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -86,8 +84,6 @@ class SalesScreen extends StatelessWidget {
                 ),
               ),
             ),
-
-            // The scrolling list of reports
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(
@@ -103,7 +99,7 @@ class SalesScreen extends StatelessWidget {
                     icon: report['icon'],
                     iconColor: report['color'],
                     onTap: () {
-                      // --- UPDATED NAVIGATION ROUTING ---
+                      // --- 2. UPDATED NAVIGATION ROUTING ---
                       if (index == 0) {
                         Navigator.push(
                           context,
@@ -119,8 +115,15 @@ class SalesScreen extends StatelessWidget {
                                 const StockColorReportScreen(),
                           ),
                         );
+                      } else if (index == 2) {
+                        // <--- NEW ROUTE FOR THE 3RD BUTTON
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ModelWiseStockScreen(),
+                          ),
+                        );
                       } else {
-                        // For the other buttons that aren't built yet
                         debugPrint('Tapped on ${report['title']}');
                       }
                     },
@@ -165,7 +168,6 @@ class SalesScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16.0),
             child: Row(
               children: [
-                // Colorful Icon Container
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -175,8 +177,6 @@ class SalesScreen extends StatelessWidget {
                   child: Icon(icon, color: iconColor, size: 24),
                 ),
                 const SizedBox(width: 16),
-
-                // Report Title
                 Expanded(
                   child: Text(
                     title,
@@ -188,8 +188,6 @@ class SalesScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-
-                // Trailing Arrow
                 const Icon(
                   Icons.arrow_forward_ios_rounded,
                   color: Color(0xFFCBD5E1),
