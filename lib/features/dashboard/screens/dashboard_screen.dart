@@ -1,14 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // --- NEW IMPORT ---
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../sales/screens/sales_screen.dart';
 import '../../auth/screens/login_screen.dart';
+import '../../services/update_service.dart'; // --- 1. NEW IMPORT FOR THE UPDATER ---
 
-class DashboardScreen extends StatelessWidget {
+// --- 2. CHANGED TO STATEFUL WIDGET ---
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
 
-  // --- NEW: Secure Logout Function ---
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  // --- 3. NEW: RUN THE UPDATE CHECK ON STARTUP ---
+  @override
+  void initState() {
+    super.initState();
+    // This checks the Node.js server for updates silently in the background
+    UpdateService.checkForUpdates(context);
+  }
+
+  // --- Secure Logout Function ---
   Future<void> _handleLogout(BuildContext context) async {
     // 1. Grab the local memory
     final prefs = await SharedPreferences.getInstance();
@@ -39,7 +54,7 @@ class DashboardScreen extends StatelessWidget {
           height: 40,
           child: Image.asset('assets/mdasoftlogo.png'),
         ),
-        // --- NEW: Log Out Button in the top right ---
+        // --- Log Out Button in the top right ---
         actions: [
           IconButton(
             icon: const Icon(
