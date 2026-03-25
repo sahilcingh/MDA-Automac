@@ -177,12 +177,12 @@ app.post('/reset-password', async (req, res) => {
     try {
         let pool = await sql.connect(dbConfig);
 
-        // 1. Verify the user actually exists
+        // 1. Verify the user actually exists (FIXED: Removed 'UserId')
         let userCheck = await pool.request()
             .input('client_id', sql.NVarChar, clientId)
             .input('username', sql.VarChar, userName)
             .query(`
-                SELECT UserId 
+                SELECT UserCate 
                 FROM Users 
                 WHERE Client_ID = @client_id AND UserName = @username
             `);
