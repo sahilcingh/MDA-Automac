@@ -18,14 +18,57 @@ const dbConfig = {
     }
 };
 
-// --- UPDATED LOGIN ROUTE (ONLY ONE) ---
+// --- UPDATED LOGIN ROUTE (DEVICE-FIRST AUTHENTICATION) ---
 app.post('/login', async (req, res) => {
     const { clientId, userName, password, deviceId } = req.body;
 
     try {
         let pool = await sql.connect(dbConfig);
 
-        // 1. Check credentials in your 'Users' table
+        // ==========================================
+        // STEP 1: CHECK THE DEVICE BEFORE ANYTHING ELSE
+        // ==========================================
+        let deviceResult = await pool.request()
+            .input('deviceId', sql.VarChar, deviceId)
+            .query(`
+                SELECT Allow 
+                FROM User_Iemi 
+                WHERE IEMI = @deviceId
+            `);
+
+        if (deviceResult.recordset.length === 0) {
+            // THE DEVICE IS BRAND NEW. 
+            // Insert it into the database with Allow = 0.
+            // (We use UserId = 0 since this device is just waiting for hardware approval).
+            await pool.request()
+                .input('deviceId', sql.VarChar, deviceId)
+                .query(`
+                    INSERT INTO User_Iemi (UserId, IEMI, Allow)
+                    VALUES (0, @deviceId, 0)
+                `);
+            
+            return res.status(403).json({ 
+                success: false, 
+                isPending: true, 
+                message: 'Device registered successfully! Please ask your Admin to approve this device to continue.' 
+            });
+        }
+
+        // THE DEVICE IS IN THE DATABASE. Check if the Admin has approved it yet.
+        const isAllowed = deviceResult.recordset[0].Allow;
+        
+        if (isAllowed === false || isAllowed === 0) {
+            // Admin has NOT approved it yet. Block them.
+            return res.status(403).json({ 
+                success: false, 
+                isPending: true, 
+                message: 'Your device is currently pending admin approval. Please check back later.' 
+            });
+        }
+
+        // ==========================================
+        // STEP 2: DEVICE IS APPROVED (Allow = 1). NOW CHECK CREDENTIALS.
+        // ==========================================
         let userResult = await pool.request()
             .input('client_id', sql.NVarChar, clientId)
             .input('username', sql.VarChar, userName)
@@ -39,57 +82,20 @@ app.post('/login', async (req, res) => {
             `);
 
         if (userResult.recordset.length === 0) {
+            // The phone is approved, but they typed the wrong password.
             return res.status(401).json({ 
                 success: false, 
                 message: 'Invalid Client ID, Username, or Password' 
             });
         }
 
-        const userId = userResult.recordset[0].UserId;
+        // EVERYTHING IS PERFECT. Let them in!
         const userRole = userResult.recordset[0].UserCate;
-
-        // 2. Check Device Authorization in 'User_Imei'
-        let deviceResult = await pool.request()
-            .input('deviceId', sql.VarChar, deviceId)
-            .input('userId', sql.Int, userId)
-            .query(`
-                SELECT Allow 
-                FROM User_Imei 
-                WHERE IEMI = @deviceId AND UserId = @userId
-            `);
-
-        if (deviceResult.recordset.length > 0) {
-            // Device exists - check if allowed
-            const isAllowed = deviceResult.recordset[0].Allow;
-            if (isAllowed === true || isAllowed === 1) {
-                return res.status(200).json({ 
-                    success: true, 
-                    message: 'Login successful',
-                    role: userRole 
-                });
-            } else {
-                return res.status(403).json({ 
-                    success: false, 
-                    isPending: true, // <--- NEW FLAG
-                    message: 'Your device is currently pending admin approval. Please check back later.' 
-                });
-            }
-        } else {
-            // Device is NEW - Insert it and block login
-            await pool.request()
-                .input('userId', sql.Int, userId)
-                .input('deviceId', sql.VarChar, deviceId)
-                .query(`
-                    INSERT INTO User_Imei (UserId, IEMI, Allow)
-                    VALUES (@userId, @deviceId, 0)
-                `);
-            
-            return res.status(403).json({ 
-                success: false, 
-                isPending: true,  // <--- NEW FLAG
-                message: 'Device registered successfully! Please ask your Admin to approve this device to continue.' 
-            });
-        }
+        return res.status(200).json({ 
+            success: true, 
+            message: 'Login successful',
+            role: userRole 
+        });
 
     } catch (err) {
         console.error('Login Error:', err);
