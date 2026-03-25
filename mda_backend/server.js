@@ -158,6 +158,54 @@ app.get('/daily-report', async (req, res) => {
     }
 });
 
+app.post('/login', async (req, res) => {
+    const { clientId, userName, password, deviceId } = req.body;
+
+    try {
+        const pool = await sql.connect(dbConfig);
+        
+        // 1. Check if the User exists and credentials are correct
+        const userCheck = await pool.request().query(`
+            SELECT UserId FROM YOUR_USERS_TABLE 
+            WHERE ClientId = '${clientId}' AND UserName = '${userName}' AND Password = '${password}'
+        `);
+
+        if (userCheck.recordset.length === 0) {
+            return res.json({ success: false, message: 'Invalid credentials.' });
+        }
+
+        const userId = userCheck.recordset[0].UserId;
+
+        // 2. Check the Device ID in your table
+        const deviceCheck = await pool.request().query(`
+            SELECT Allow FROM YOUR_DEVICE_TABLE 
+            WHERE IEMI = '${deviceId}' AND UserId = ${userId}
+        `);
+
+        // 3. Logic based on the Allow bit
+        if (deviceCheck.recordset.length > 0) {
+            // Device is in the database. Is it allowed?
+            if (deviceCheck.recordset[0].Allow === true || deviceCheck.recordset[0].Allow === 1) {
+                res.json({ success: true, message: 'Login successful' });
+            } else {
+                res.json({ success: false, message: 'This device is not authorized yet. Please contact the admin.' });
+            }
+        } else {
+            // Device is NOT in the database. Insert it with Allow = 0 (Pending)
+            await pool.request().query(`
+                INSERT INTO YOUR_DEVICE_TABLE (UserId, IEMI, Allow)
+                VALUES (${userId}, '${deviceId}', 0)
+            `);
+            
+            res.json({ success: false, message: 'New device registered. Please wait for admin approval to log in.' });
+        }
+
+    } catch (err) {
+        console.error('Login Error:', err);
+        res.status(500).json({ success: false, message: 'Server error during login.' });
+    }
+});
+
 // 3. Start the Server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

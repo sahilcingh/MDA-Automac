@@ -2,7 +2,10 @@ import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // --- NEW IMPORT ---
+
 import '../../auth/screens/login_screen.dart';
+import '../../dashboard/screens/dashboard_screen.dart'; // --- NEW IMPORT ---
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -32,23 +35,37 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(milliseconds: 2500),
     )..repeat();
 
-    // 3. THE FIX: Timer to navigate to LoginScreen after 3.5 seconds
-    Future.delayed(const Duration(milliseconds: 3500), () {
-      // Check if the widget is still mounted before navigating to prevent errors
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            transitionDuration: const Duration(milliseconds: 800),
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const LoginScreen(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-                  return FadeTransition(opacity: animation, child: child);
-                },
-          ),
-        );
-      }
-    });
+    // 3. Check login status and navigate after animation finishes
+    _checkLoginAndNavigate();
+  }
+
+  // --- NEW: The smart navigation function ---
+  Future<void> _checkLoginAndNavigate() async {
+    // Wait for 3.5 seconds to let your beautiful animation play out
+    await Future.delayed(const Duration(milliseconds: 3500));
+
+    // Check device memory for the login badge
+    final prefs = await SharedPreferences.getInstance();
+    final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
+    // Ensure the widget is still on screen before navigating
+    if (!mounted) return;
+
+    // Decide which screen to go to based on the badge
+    Widget nextScreen = isLoggedIn
+        ? const DashboardScreen()
+        : const LoginScreen();
+
+    // Perform your beautiful smooth fade transition to the correct screen
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 800),
+        pageBuilder: (context, animation, secondaryAnimation) => nextScreen,
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+      ),
+    );
   }
 
   @override

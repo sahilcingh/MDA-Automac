@@ -98,7 +98,6 @@ class _StockColorReportScreenState extends State<StockColorReportScreen> {
             ),
             child: Column(
               children: [
-                // --- THE FIX: Wrapped in Expanded and FittedBox ---
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -112,7 +111,7 @@ class _StockColorReportScreenState extends State<StockColorReportScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 16), // Adds a safe gap between them
+                    const SizedBox(width: 16),
                     Expanded(
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
@@ -125,7 +124,6 @@ class _StockColorReportScreenState extends State<StockColorReportScreen> {
                     ),
                   ],
                 ),
-                // --------------------------------------------------
                 const Divider(color: Colors.white38, height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -243,7 +241,7 @@ class _StockColorReportScreenState extends State<StockColorReportScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 8), // Added buffer here too just in case!
+                const SizedBox(width: 8),
                 Text(
                   item['totalStock'].toString(),
                   style: GoogleFonts.inter(
