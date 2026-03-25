@@ -74,7 +74,7 @@ app.post('/login', async (req, res) => {
             .input('username', sql.VarChar, userName)
             .input('password', sql.VarChar, password)
             .query(`
-                SELECT UserId, UserCate 
+                SELECT UserCate 
                 FROM Users 
                 WHERE Client_ID = @client_id 
                   AND UserName = @username 
