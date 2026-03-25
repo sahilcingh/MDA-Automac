@@ -70,7 +70,8 @@ app.post('/login', async (req, res) => {
             } else {
                 return res.status(403).json({ 
                     success: false, 
-                    message: 'This device is not authorized yet. Please contact the admin.' 
+                    isPending: true, // <--- NEW FLAG
+                    message: 'Your device is currently pending admin approval. Please check back later.' 
                 });
             }
         } else {
@@ -85,7 +86,8 @@ app.post('/login', async (req, res) => {
             
             return res.status(403).json({ 
                 success: false, 
-                message: 'New device registered. Please wait for admin approval.' 
+                isPending: true,  // <--- NEW FLAG
+                message: 'Device registered successfully! Please ask your Admin to approve this device to continue.' 
             });
         }
 

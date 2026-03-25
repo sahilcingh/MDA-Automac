@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:device_info_plus/device_info_plus.dart'; // --- NEW IMPORT ---
+import 'package:device_info_plus/device_info_plus.dart';
 
 import '../../dashboard/screens/dashboard_screen.dart';
 
@@ -31,6 +31,7 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  // STANDARD RED ERROR POPUP (For wrong passwords, etc.)
   void _showErrorPopup(String title, String message) {
     showDialog(
       context: context,
@@ -85,7 +86,65 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // --- NEW: Function to safely get the Unique Device ID ---
+  // --- NEW: FRIENDLY ORANGE PENDING POPUP ---
+  void _showPendingPopup(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              const Icon(
+                Icons.hourglass_top_rounded,
+                color: Color(0xFFFF7A00),
+                size: 28,
+              ), // Orange Wait Icon
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF1E3A8A),
+                    fontSize: 18,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            message,
+            style: GoogleFonts.inter(
+              color: const Color(0xFF475569),
+              fontSize: 15,
+              height: 1.4,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                // Optionally clear the password field so they have to re-type it later
+                _passwordController.clear();
+              },
+              child: Text(
+                'Understood',
+                style: GoogleFonts.inter(
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFFFF7A00),
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<String> _getUniqueDeviceId() async {
     var deviceInfo = DeviceInfoPlugin();
     if (Platform.isIOS) {
@@ -93,7 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
       return iosDeviceInfo.identifierForVendor ?? 'unknown_ios_device';
     } else if (Platform.isAndroid) {
       var androidDeviceInfo = await deviceInfo.androidInfo;
-      return androidDeviceInfo.id; // This matches your 25aef907b2a5546d format!
+      return androidDeviceInfo.id;
     }
     return 'unknown_device';
   }
@@ -116,10 +175,8 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      // 1. Grab the Device ID
       String deviceId = await _getUniqueDeviceId();
 
-      // 2. Send it all to the backend
       final url = Uri.parse('https://mda-automac.onrender.com/login');
       final response = await http.post(
         url,
@@ -128,39 +185,41 @@ class _LoginScreenState extends State<LoginScreen> {
           'clientId': clientId,
           'userName': userName,
           'password': password,
-          'deviceId': deviceId, // --- SENDING THE DEVICE ID ---
+          'deviceId': deviceId,
         }),
       );
 
       if (!mounted) return;
 
-      bool isSuccess = false;
-      String errorMessage = 'Please check your credentials and try again.';
-
       try {
         final responseData = jsonDecode(response.body);
+
         if (response.statusCode == 200 && responseData['success'] == true) {
-          isSuccess = true;
+          // SUCCESSFUL LOGIN
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('isLoggedIn', true);
+          await prefs.setString('userName', userName);
+
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const DashboardScreen()),
+          );
+        } else if (responseData['isPending'] == true) {
+          // --- NEW: CATCH THE PENDING FLAG AND SHOW THE ORANGE POPUP ---
+          _showPendingPopup('Approval Required', responseData['message']);
         } else {
-          errorMessage = responseData['message'] ?? errorMessage;
+          // REGULAR ERROR (Wrong password, wrong Client ID)
+          _showErrorPopup(
+            'Login Failed',
+            responseData['message'] ?? 'Please check your credentials.',
+          );
         }
       } catch (_) {
-        errorMessage =
-            'Server returned an unexpected error (${response.statusCode}).';
-      }
-
-      if (isSuccess) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('isLoggedIn', true);
-        await prefs.setString('userName', userName);
-
-        if (!mounted) return;
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const DashboardScreen()),
+        _showErrorPopup(
+          'Server Error',
+          'Server returned an unexpected response (${response.statusCode}).',
         );
-      } else {
-        _showErrorPopup('Login Failed', errorMessage);
       }
     } catch (error) {
       if (!mounted) return;
