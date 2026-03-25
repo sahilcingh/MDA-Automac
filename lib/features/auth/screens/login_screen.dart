@@ -31,7 +31,6 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // STANDARD RED ERROR POPUP (For wrong passwords, etc.)
   void _showErrorPopup(String title, String message) {
     showDialog(
       context: context,
@@ -86,7 +85,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // --- NEW: FRIENDLY ORANGE PENDING POPUP ---
   void _showPendingPopup(String title, String message) {
     showDialog(
       context: context,
@@ -101,7 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Icons.hourglass_top_rounded,
                 color: Color(0xFFFF7A00),
                 size: 28,
-              ), // Orange Wait Icon
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -127,7 +125,6 @@ class _LoginScreenState extends State<LoginScreen> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                // Optionally clear the password field so they have to re-type it later
                 _passwordController.clear();
               },
               child: Text(
@@ -144,6 +141,156 @@ class _LoginScreenState extends State<LoginScreen> {
       },
     );
   }
+
+  // --- NEW: THE FORGOT PASSWORD DIALOG SYSTEM ---
+  void _showForgotPasswordDialog() {
+    final resetClientIdController = TextEditingController(
+      text: _clientIdController.text,
+    );
+    final resetUserNameController = TextEditingController(
+      text: _userNameController.text,
+    );
+    bool isResetting = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              backgroundColor: Colors.white,
+              title: Text(
+                'Reset Password',
+                style: GoogleFonts.plusJakartaSans(
+                  fontWeight: FontWeight.w800,
+                  color: const Color(0xFF1E3A8A),
+                ),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Enter your Client ID and Username. We will reset your password to a temporary default.',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF64748B),
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  _buildTextField(
+                    controller: resetClientIdController,
+                    label: 'Client ID',
+                    icon: Icons.business_rounded,
+                  ),
+                  const SizedBox(height: 12),
+                  _buildTextField(
+                    controller: resetUserNameController,
+                    label: 'User Name',
+                    icon: Icons.person_outline_rounded,
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isResetting
+                      ? null
+                      : () => Navigator.of(dialogContext).pop(),
+                  child: Text(
+                    'Cancel',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF94A3B8),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: isResetting
+                      ? null
+                      : () async {
+                          if (resetClientIdController.text.isEmpty ||
+                              resetUserNameController.text.isEmpty)
+                            return;
+
+                          setState(() => isResetting = true);
+
+                          try {
+                            final url = Uri.parse(
+                              'https://mda-automac.onrender.com/reset-password',
+                            );
+                            final response = await http.post(
+                              url,
+                              headers: {'Content-Type': 'application/json'},
+                              body: jsonEncode({
+                                'clientId': resetClientIdController.text.trim(),
+                                'userName': resetUserNameController.text.trim(),
+                              }),
+                            );
+
+                            final responseData = jsonDecode(response.body);
+
+                            if (!context.mounted) return;
+                            Navigator.of(
+                              dialogContext,
+                            ).pop(); // Close the input dialog
+
+                            if (response.statusCode == 200) {
+                              // Show success popup with the new temp password
+                              _showPendingPopup(
+                                'Password Reset',
+                                responseData['message'],
+                              );
+                              // Auto-fill the password field for them
+                              _passwordController.text = 'mda123';
+                            } else {
+                              _showErrorPopup(
+                                'Reset Failed',
+                                responseData['message'],
+                              );
+                            }
+                          } catch (e) {
+                            if (!context.mounted) return;
+                            Navigator.of(dialogContext).pop();
+                            _showErrorPopup(
+                              'Connection Error',
+                              'Failed to connect to the server.',
+                            );
+                          }
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3B82F6),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: isResetting
+                      ? const SizedBox(
+                          height: 16,
+                          width: 16,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Text(
+                          'Reset',
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+  // ----------------------------------------------
 
   Future<String> _getUniqueDeviceId() async {
     var deviceInfo = DeviceInfoPlugin();
@@ -170,9 +317,7 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
       String deviceId = await _getUniqueDeviceId();
@@ -195,7 +340,6 @@ class _LoginScreenState extends State<LoginScreen> {
         final responseData = jsonDecode(response.body);
 
         if (response.statusCode == 200 && responseData['success'] == true) {
-          // SUCCESSFUL LOGIN
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool('isLoggedIn', true);
           await prefs.setString('userName', userName);
@@ -206,10 +350,8 @@ class _LoginScreenState extends State<LoginScreen> {
             MaterialPageRoute(builder: (context) => const DashboardScreen()),
           );
         } else if (responseData['isPending'] == true) {
-          // --- NEW: CATCH THE PENDING FLAG AND SHOW THE ORANGE POPUP ---
           _showPendingPopup('Approval Required', responseData['message']);
         } else {
-          // REGULAR ERROR (Wrong password, wrong Client ID)
           _showErrorPopup(
             'Login Failed',
             responseData['message'] ?? 'Please check your credentials.',
@@ -225,14 +367,10 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
       _showErrorPopup(
         'Connection Error',
-        'Cannot connect to the server. Please check your internet connection or try again later.',
+        'Cannot connect to the server. Please check your internet connection.',
       );
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -291,7 +429,9 @@ class _LoginScreenState extends State<LoginScreen> {
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
-                  onPressed: () {},
+                  onPressed: _isLoading
+                      ? null
+                      : _showForgotPasswordDialog, // --- WIRED UP THE BUTTON ---
                   child: Text(
                     'Forgot Password?',
                     style: GoogleFonts.inter(
