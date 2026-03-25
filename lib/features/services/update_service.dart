@@ -8,23 +8,29 @@ import 'package:http/http.dart' as http;
 class UpdateService {
   static Future<void> checkForUpdates(BuildContext context) async {
     try {
-      // 1. Get the current app version installed on this specific phone
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
-      String currentVersion = packageInfo.version;
-      // Note: This pulls from the 'version: 1.0.0+1' line in your pubspec.yaml
+      // Added .trim() to clean the phone's version string
+      String currentVersion = packageInfo.version.trim();
 
-      // 2. Ask your Render Node.js server for the latest version
       final url = Uri.parse('https://mda-automac.onrender.com/check-update');
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        String latestVersion = data['latestVersion'];
+
+        // Added .trim() to clean the server's version string
+        String latestVersion = data['latestVersion'].toString().trim();
         bool isMandatory = data['isMandatory'];
         String apkUrl = data['apkUrl'];
         String releaseNotes = data['releaseNotes'];
 
-        // 3. Compare them! If the server has a higher version, trigger the popup.
+        // --- NEW: DIAGNOSTIC PRINTS ---
+        debugPrint("====================================");
+        debugPrint("PHONE CURRENT VERSION: '$currentVersion'");
+        debugPrint("SERVER LATEST VERSION: '$latestVersion'");
+        debugPrint("====================================");
+
+        // Compare them strictly
         if (currentVersion != latestVersion) {
           if (!context.mounted) return;
           _showUpdateDialog(
@@ -38,7 +44,6 @@ class UpdateService {
       }
     } catch (e) {
       debugPrint("Update check failed silently: $e");
-      // We fail silently so if they have bad internet, it doesn't crash the app
     }
   }
 

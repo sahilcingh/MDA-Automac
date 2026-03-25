@@ -205,7 +205,7 @@ app.get('/check-update', (req, res) => {
         res.status(200).json({
             latestVersion: "1.0.1", // Change this whenever you make a new APK!
             isMandatory: true,      // If true, the user CANNOT close the update popup
-            apkUrl: "https://drive.google.com/uc?export=download&id=1TJNSrR2oM2QZTn0J32S0qh6uM01sgbPX", // We will set this up in Step 2
+            apkUrl: "https://drive.google.com/uc?export=download&id=1N1Y0T6dLEiMG7vXZcJwxYZkineUyHUdR", // We will set this up in Step 2
             releaseNotes: "• Added Model Wise Stock Report\n• Security upgrades\n• Bug fixes"
         });
     } catch (err) {
