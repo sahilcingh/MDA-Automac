@@ -1,10 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // --- NEW IMPORT ---
+
 import '../../sales/screens/sales_screen.dart';
 import '../../auth/screens/login_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({Key? key}) : super(key: key);
+
+  // --- NEW: Secure Logout Function ---
+  Future<void> _handleLogout(BuildContext context) async {
+    // 1. Grab the local memory
+    final prefs = await SharedPreferences.getInstance();
+
+    // 2. Wipe the login badges
+    await prefs.remove('isLoggedIn');
+    await prefs.remove('userName');
+
+    // 3. Kick the user back to the Login Screen
+    if (!context.mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,23 +33,24 @@ class DashboardScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: Color(0xFF1E3A8A),
-            size: 20,
-          ),
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const LoginScreen()),
-            );
-          },
-        ),
+        // (We removed the back button since this is the main dashboard)
+        leading: const SizedBox(),
         title: SizedBox(
           height: 40,
           child: Image.asset('assets/mdasoftlogo.png'),
         ),
+        // --- NEW: Log Out Button in the top right ---
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.logout_rounded,
+              color: Color(0xFFEF4444),
+            ), // Red logout icon
+            tooltip: 'Log Out',
+            onPressed: () => _handleLogout(context),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: SafeArea(
         child: Padding(
@@ -39,7 +59,6 @@ class DashboardScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 32),
-
               Text(
                 'Select Report',
                 style: GoogleFonts.plusJakartaSans(
@@ -72,7 +91,6 @@ class DashboardScreen extends StatelessWidget {
                       icon: Icons.trending_up_rounded,
                       iconColor: const Color(0xFF3B82F6),
                       onTap: () {
-                        // THIS IS THE NEW NAVIGATION CODE
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -82,7 +100,6 @@ class DashboardScreen extends StatelessWidget {
                       },
                     ),
                     const SizedBox(height: 16),
-
                     _buildModuleCard(
                       context: context,
                       title: 'Service',
@@ -94,7 +111,6 @@ class DashboardScreen extends StatelessWidget {
                       },
                     ),
                     const SizedBox(height: 16),
-
                     _buildModuleCard(
                       context: context,
                       title: 'Account',
@@ -156,12 +172,10 @@ class DashboardScreen extends StatelessWidget {
                   child: Icon(icon, color: iconColor, size: 28),
                 ),
                 const SizedBox(width: 20),
-
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment:
-                        MainAxisAlignment.center, // Vertically centers the text
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
                         title,
@@ -171,7 +185,6 @@ class DashboardScreen extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      // Only render the subtitle spacing and text if a subtitle exists
                       if (subtitle.isNotEmpty) ...[
                         const SizedBox(height: 4),
                         Text(
@@ -186,7 +199,6 @@ class DashboardScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
