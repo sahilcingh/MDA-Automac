@@ -170,53 +170,6 @@ app.get('/daily-report', async (req, res) => {
     }
 });
 
-// --- NEW ROUTE: FORGOT PASSWORD (RESET TO DEFAULT) ---
-app.post('/reset-password', async (req, res) => {
-    const { clientId, userName } = req.body;
-
-    try {
-        let pool = await sql.connect(dbConfig);
-
-        // 1. Verify the user actually exists (FIXED: Removed 'UserId')
-        let userCheck = await pool.request()
-            .input('client_id', sql.NVarChar, clientId)
-            .input('username', sql.VarChar, userName)
-            .query(`
-                SELECT UserCate 
-                FROM Users 
-                WHERE Client_ID = @client_id AND UserName = @username
-            `);
-
-        if (userCheck.recordset.length === 0) {
-            return res.status(404).json({ 
-                success: false, 
-                message: 'We could not find an account with that Client ID and Username.' 
-            });
-        }
-
-        // 2. Overwrite the forgotten password with a temporary one
-        const tempPassword = 'mda123'; // The default reset password
-        
-        await pool.request()
-            .input('client_id', sql.NVarChar, clientId)
-            .input('username', sql.VarChar, userName)
-            .input('tempPass', sql.VarChar, tempPassword)
-            .query(`
-                UPDATE Users 
-                SET Pass = @tempPass 
-                WHERE Client_ID = @client_id AND UserName = @username
-            `);
-
-        return res.status(200).json({ 
-            success: true, 
-            message: `Password successfully reset!\n\nYour temporary password is: ${tempPassword}\n\nPlease login and change it immediately.` 
-        });
-
-    } catch (err) {
-        console.error('Password Reset Error:', err);
-        res.status(500).json({ success: false, message: 'Server error during password reset.' });
-    }
-});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
