@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'stock_color_report_screen.dart';
 import 'daily_report_screen.dart';
-import 'model_wise_stock_screen.dart'; // <--- 1. NEW IMPORT ADDED HERE
+import 'model_wise_stock_screen.dart';
+import 'sub_dealer_report_screen.dart'; // <--- NEW IMPORT ADDED HERE
 
 class SalesScreen extends StatelessWidget {
   const SalesScreen({Key? key}) : super(key: key);
@@ -99,7 +100,6 @@ class SalesScreen extends StatelessWidget {
                     icon: report['icon'],
                     iconColor: report['color'],
                     onTap: () {
-                      // --- 2. UPDATED NAVIGATION ROUTING ---
                       if (index == 0) {
                         Navigator.push(
                           context,
@@ -116,11 +116,18 @@ class SalesScreen extends StatelessWidget {
                           ),
                         );
                       } else if (index == 2) {
-                        // <--- NEW ROUTE FOR THE 3RD BUTTON
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => const ModelWiseStockScreen(),
+                          ),
+                        );
+                      } else if (index == 3) {
+                        // --- NEW ROUTE FOR SUB DEALER REPORT ---
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SubDealerReportScreen(),
                           ),
                         );
                       } else {

@@ -18,16 +18,13 @@ const dbConfig = {
     }
 };
 
-// --- UPDATED LOGIN ROUTE (DEVICE-FIRST AUTHENTICATION) ---
+// --- LOGIN ROUTE (DEVICE-FIRST AUTHENTICATION) ---
 app.post('/login', async (req, res) => {
     const { clientId, userName, password, deviceId } = req.body;
 
     try {
         let pool = await sql.connect(dbConfig);
 
-        // ==========================================
-        // STEP 1: CHECK THE DEVICE BEFORE ANYTHING ELSE
-        // ==========================================
         let deviceResult = await pool.request()
             .input('deviceId', sql.VarChar, deviceId)
             .query(`
@@ -37,9 +34,6 @@ app.post('/login', async (req, res) => {
             `);
 
         if (deviceResult.recordset.length === 0) {
-            // THE DEVICE IS BRAND NEW. 
-            // Insert it into the database with Allow = 0.
-            // (We use UserId = 0 since this device is just waiting for hardware approval).
             await pool.request()
                 .input('deviceId', sql.VarChar, deviceId)
                 .query(`
@@ -54,11 +48,9 @@ app.post('/login', async (req, res) => {
             });
         }
 
-        // THE DEVICE IS IN THE DATABASE. Check if the Admin has approved it yet.
         const isAllowed = deviceResult.recordset[0].Allow;
         
         if (isAllowed === false || isAllowed === 0) {
-            // Admin has NOT approved it yet. Block them.
             return res.status(403).json({ 
                 success: false, 
                 isPending: true, 
@@ -66,9 +58,6 @@ app.post('/login', async (req, res) => {
             });
         }
 
-        // ==========================================
-        // STEP 2: DEVICE IS APPROVED (Allow = 1). NOW CHECK CREDENTIALS.
-        // ==========================================
         let userResult = await pool.request()
             .input('client_id', sql.NVarChar, clientId)
             .input('username', sql.VarChar, userName)
@@ -82,14 +71,12 @@ app.post('/login', async (req, res) => {
             `);
 
         if (userResult.recordset.length === 0) {
-            // The phone is approved, but they typed the wrong password.
             return res.status(401).json({ 
                 success: false, 
                 message: 'Invalid Client ID, Username, or Password' 
             });
         }
 
-        // EVERYTHING IS PERFECT. Let them in!
         const userRole = userResult.recordset[0].UserCate;
         return res.status(200).json({ 
             success: true, 
@@ -170,7 +157,7 @@ app.get('/daily-report', async (req, res) => {
     }
 });
 
-// --- NEW ROUTE: MODEL WISE STOCK REPORT ---
+// --- MODEL WISE STOCK REPORT ---
 app.get('/model-wise-stock', async (req, res) => {
     try {
         const pool = await sql.connect(dbConfig);
@@ -183,7 +170,7 @@ app.get('/model-wise-stock', async (req, res) => {
                 ISNULL(F7, 0) AS sale, 
                 ISNULL(F8, 0) AS closing 
             FROM Auto_Misc_Krishna 
-            WHERE F2 = 'VehStk_Rpt' -- <--- FIXED: Using your actual database name!
+            WHERE F2 = 'VehStk_Rpt'
               AND F3 IS NOT NULL
         `);
         res.json(result.recordset);
@@ -193,14 +180,38 @@ app.get('/model-wise-stock', async (req, res) => {
     }
 });
 
-// --- NEW ROUTE: AUTO-UPDATER ---
-// --- NEW ROUTE: APP AUTO-UPDATER ---
+// --- NEW ROUTE: SUB DEALER / BRANCH REPORT ---
+app.get('/sub-dealer-report', async (req, res) => {
+    try {
+        const pool = await sql.connect(dbConfig);
+        
+        // Assuming F3 is Dealer Name, F4 is Challan MTD, etc.
+        const result = await pool.request().query(`
+            SELECT 
+                F3 AS dealerName, 
+                ISNULL(F4, 0) AS challanMTD, 
+                ISNULL(F5, 0) AS challanYTD, 
+                ISNULL(F6, 0) AS saleMTD, 
+                ISNULL(F7, 0) AS saleYTD 
+            FROM Auto_Misc_Krishna 
+            WHERE F2 = 'VehSubSales_Rpt' 
+              AND F3 IS NOT NULL
+        `);
+
+        res.json(result.recordset);
+    } catch (err) {
+        console.error('Database query error:', err);
+        res.status(500).json({ error: 'Failed to fetch sub dealer report' });
+    }
+});
+
+// --- APP AUTO-UPDATER ---
 app.get('/check-update', (req, res) => {
     try {
         res.status(200).json({
-            latestVersion: "1.0.2", // <-- MUST match the first part of your pubspec.yaml version!
+            latestVersion: "1.0.2",
             isMandatory: true, 
-            apkUrl: "https://drive.google.com/uc?export=download&id=1IMSGsaGNLRFm3XZjemo-A3hpntcY5WfP", // Your new direct link!
+            apkUrl: "https://drive.google.com/uc?export=download&id=1IMSGsaGNLRFm3XZjemo-A3hpntcY5WfP", 
             releaseNotes: "• Added Model Wise Stock Report\n• Security upgrades\n• Bug fixes"
         });
     } catch (err) {
