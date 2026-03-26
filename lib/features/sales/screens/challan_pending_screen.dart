@@ -61,20 +61,19 @@ class _ChallanPendingScreenState extends State<ChallanPendingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Dynamic Date
+    final now = DateTime.now();
+    final dateString =
+        "${now.day.toString().padLeft(2, '0')}-${now.month.toString().padLeft(2, '0')}-${now.year}";
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Color(0xFF1E3A8A)),
-        title: Text(
-          'Challan Pending Status',
-          style: GoogleFonts.plusJakartaSans(
-            color: const Color(0xFF1E3A8A),
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+        // Replaced text title with your logo to match the other screens
+        title: Image.asset('assets/mdasoftlogo.png', height: 36),
         centerTitle: true,
         actions: [
           IconButton(
@@ -95,9 +94,46 @@ class _ChallanPendingScreenState extends State<ChallanPendingScreen> {
       ),
       body: Column(
         children: [
-          // Column Headers
+          // 1. Sleek Blue Date Header (Matches Financer/Model Screens)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            color: const Color(0xFF1E3A8A),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Challan Pending Status',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.calendar_today_rounded,
+                      color: Colors.white70,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      dateString,
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // 2. Column Headers
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             decoration: const BoxDecoration(
               color: Colors.white,
               border: Border(
@@ -133,7 +169,7 @@ class _ChallanPendingScreenState extends State<ChallanPendingScreen> {
             ),
           ),
 
-          // Scrollable Data List
+          // 3. Scrollable Data List
           Expanded(
             child: _isLoading
                 ? const Center(
@@ -162,7 +198,7 @@ class _ChallanPendingScreenState extends State<ChallanPendingScreen> {
                       return Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 20,
-                          vertical: 16,
+                          vertical: 14, // Adjusted padding to match others
                         ),
                         decoration: BoxDecoration(
                           color: isEven
@@ -176,6 +212,7 @@ class _ChallanPendingScreenState extends State<ChallanPendingScreen> {
                           ),
                         ),
                         child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             // Customer Name
                             Expanded(
@@ -184,12 +221,13 @@ class _ChallanPendingScreenState extends State<ChallanPendingScreen> {
                                 item['customerName'] ?? 'UNKNOWN CUSTOMER',
                                 style: GoogleFonts.plusJakartaSans(
                                   color: const Color(0xFF0F172A),
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 14,
+                                  fontWeight: FontWeight
+                                      .w700, // Matched font weight to others
+                                  fontSize: 13,
                                 ),
                               ),
                             ),
-                            // Pending Amount (Highlighted Blue)
+                            // Pending Amount (Keeping the Highlighted Blue)
                             Expanded(
                               flex: 1,
                               child: Text(
@@ -211,7 +249,7 @@ class _ChallanPendingScreenState extends State<ChallanPendingScreen> {
                   ),
           ),
 
-          // Grand Total Footer
+          // 4. Grand Total Footer
           Container(
             padding: const EdgeInsets.only(
               left: 20,
@@ -233,10 +271,10 @@ class _ChallanPendingScreenState extends State<ChallanPendingScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'TOTAL PENDING',
+                  'GRAND TOTAL',
                   style: GoogleFonts.plusJakartaSans(
                     fontWeight: FontWeight.w800,
-                    fontSize: 14,
+                    fontSize: 12,
                     color: const Color(0xFF64748B),
                     letterSpacing: 0.5,
                   ),

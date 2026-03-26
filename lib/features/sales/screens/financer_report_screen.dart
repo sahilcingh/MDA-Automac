@@ -133,7 +133,7 @@ class _FinancerReportScreenState extends State<FinancerReportScreen> {
             ),
           ),
 
-          // 2. Modern Column Headers
+          // 2. Modern Column Headers (True Grid)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: const BoxDecoration(
@@ -145,7 +145,7 @@ class _FinancerReportScreenState extends State<FinancerReportScreen> {
             child: Row(
               children: [
                 Expanded(
-                  flex: 2,
+                  flex: 4,
                   child: Text(
                     'FINANCER',
                     style: GoogleFonts.inter(
@@ -156,10 +156,10 @@ class _FinancerReportScreenState extends State<FinancerReportScreen> {
                   ),
                 ),
                 Expanded(
-                  flex: 1,
+                  flex: 2,
                   child: Text(
                     'MTD',
-                    textAlign: TextAlign.center,
+                    textAlign: TextAlign.right,
                     style: GoogleFonts.inter(
                       fontWeight: FontWeight.w800,
                       fontSize: 12,
@@ -168,10 +168,10 @@ class _FinancerReportScreenState extends State<FinancerReportScreen> {
                   ),
                 ),
                 Expanded(
-                  flex: 1,
+                  flex: 2,
                   child: Text(
                     'YTD',
-                    textAlign: TextAlign.center,
+                    textAlign: TextAlign.right,
                     style: GoogleFonts.inter(
                       fontWeight: FontWeight.w800,
                       fontSize: 12,
@@ -225,33 +225,31 @@ class _FinancerReportScreenState extends State<FinancerReportScreen> {
                             ),
                           ),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment
+                              .center, // Keeps everything on the same line
                           children: [
-                            // Financer Name
-                            Text(
-                              item['financerName'] ?? 'UNKNOWN FINANCER',
-                              style: GoogleFonts.plusJakartaSans(
-                                color: const Color(0xFF0F172A),
-                                fontWeight: FontWeight.w700,
-                                fontSize: 13,
+                            // Financer Name (Wraps neatly if too long)
+                            Expanded(
+                              flex: 4,
+                              child: Text(
+                                item['financerName'] ?? 'UNKNOWN FINANCER',
+                                style: GoogleFonts.plusJakartaSans(
+                                  color: const Color(0xFF0F172A),
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 13,
+                                ),
                               ),
                             ),
-                            const SizedBox(height: 12),
-                            // The Numbers
-                            Row(
-                              children: [
-                                Expanded(
-                                  flex: 2,
-                                  child: const SizedBox(),
-                                ), // Spacer for alignment
-                                _buildNumberCell(
-                                  item['mtd']?.toString() ?? '0',
-                                ),
-                                _buildNumberCell(
-                                  item['ytd']?.toString() ?? '0',
-                                ),
-                              ],
+                            // MTD Number
+                            _buildNumberCell(
+                              item['mtd']?.toString() ?? '0',
+                              flex: 2,
+                            ),
+                            // YTD Number
+                            _buildNumberCell(
+                              item['ytd']?.toString() ?? '0',
+                              flex: 2,
                             ),
                           ],
                         ),
@@ -281,7 +279,7 @@ class _FinancerReportScreenState extends State<FinancerReportScreen> {
             child: Row(
               children: [
                 Expanded(
-                  flex: 2,
+                  flex: 4,
                   child: Text(
                     'GRAND TOTAL',
                     style: GoogleFonts.plusJakartaSans(
@@ -292,8 +290,8 @@ class _FinancerReportScreenState extends State<FinancerReportScreen> {
                     ),
                   ),
                 ),
-                _buildTotalCell(_totalMTD.toString()),
-                _buildTotalCell(_totalYTD.toString()),
+                _buildTotalCell(_totalMTD.toString(), flex: 2),
+                _buildTotalCell(_totalYTD.toString(), flex: 2),
               ],
             ),
           ),
@@ -302,13 +300,15 @@ class _FinancerReportScreenState extends State<FinancerReportScreen> {
     );
   }
 
-  Widget _buildNumberCell(String text) {
+  // Helper widgets optimized for right-alignment
+  Widget _buildNumberCell(String text, {required int flex}) {
     final displayText = (text == 'null') ? '0' : text;
     return Expanded(
-      flex: 1,
+      flex: flex,
       child: Text(
         displayText,
-        textAlign: TextAlign.center,
+        textAlign:
+            TextAlign.right, // Right alignment is standard for data tables
         style: GoogleFonts.inter(
           fontWeight: FontWeight.w600,
           fontSize: 14,
@@ -318,12 +318,12 @@ class _FinancerReportScreenState extends State<FinancerReportScreen> {
     );
   }
 
-  Widget _buildTotalCell(String text) {
+  Widget _buildTotalCell(String text, {required int flex}) {
     return Expanded(
-      flex: 1,
+      flex: flex,
       child: Text(
         text,
-        textAlign: TextAlign.center,
+        textAlign: TextAlign.right,
         style: GoogleFonts.inter(
           fontWeight: FontWeight.w800,
           fontSize: 16,

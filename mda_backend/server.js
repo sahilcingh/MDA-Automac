@@ -255,9 +255,9 @@ app.get('/financer-report', async (req, res) => {
 app.get('/check-update', (req, res) => {
     try {
         res.status(200).json({
-            latestVersion: "1.0.2",
+            latestVersion: "1.0.3",
             isMandatory: true, 
-            apkUrl: "https://drive.google.com/uc?export=download&id=1IMSGsaGNLRFm3XZjemo-A3hpntcY5WfP", 
+            apkUrl: "https://drive.google.com/uc?export=download&id=1ldBjHBHILmrnHNN45LKNiYASMozLCaaF", 
             releaseNotes: "• Added Model Wise Stock Report\n• Security upgrades\n• Bug fixes"
         });
     } catch (err) {
