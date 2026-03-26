@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:convert'; // --- NEW IMPORT
+import 'package:http/http.dart' as http; // --- NEW IMPORT
 
 class ModelWiseStockScreen extends StatefulWidget {
   const ModelWiseStockScreen({Key? key}) : super(key: key);
@@ -9,41 +11,71 @@ class ModelWiseStockScreen extends StatefulWidget {
 }
 
 class _ModelWiseStockScreenState extends State<ModelWiseStockScreen> {
-  // We will replace this with live data from Node.js in the next step!
-  final List<Map<String, dynamic>> _mockData = [
-    {
-      "model": "DESTINI 110 FI VX DRSC",
-      "opening": 0,
-      "purchase": 58,
-      "challan": 9,
-      "sale": 10,
-      "closing": 39,
-    },
-    {
-      "model": "DESTINI 110 FI ZX DSSC",
-      "opening": 0,
-      "purchase": 10,
-      "challan": 2,
-      "sale": 0,
-      "closing": 8,
-    },
-    {
-      "model": "DESTINI PRIME OBD2 DRS",
-      "opening": 0,
-      "purchase": 76,
-      "challan": 26,
-      "sale": 21,
-      "closing": 29,
-    },
-    {
-      "model": "XTREME 125R ABS DSS",
-      "opening": 46,
-      "purchase": 6,
-      "challan": 34,
-      "sale": 17,
-      "closing": 1,
-    },
-  ];
+  // --- NEW: Live Data Variables ---
+  List<dynamic> _stockData = [];
+  bool _isLoading = true;
+  String _errorMessage = '';
+
+  // --- NEW: Dynamic Totals Variables ---
+  int _totalOpening = 0;
+  int _totalPurchase = 0;
+  int _totalChallan = 0;
+  int _totalSale = 0;
+  int _totalClosing = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchLiveStockData();
+  }
+
+  // --- NEW: Function to Fetch Data from Node.js ---
+  Future<void> _fetchLiveStockData() async {
+    try {
+      final url = Uri.parse(
+        'https://mda-automac.onrender.com/model-wise-stock',
+      );
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> fetchedData = jsonDecode(response.body);
+
+        // Calculate the grand totals dynamically
+        int tOpening = 0, tPurchase = 0, tChallan = 0, tSale = 0, tClosing = 0;
+
+        for (var item in fetchedData) {
+          tOpening += int.tryParse(item['opening'].toString()) ?? 0;
+          tPurchase += int.tryParse(item['purchase'].toString()) ?? 0;
+          tChallan += int.tryParse(item['challan'].toString()) ?? 0;
+          tSale += int.tryParse(item['sale'].toString()) ?? 0;
+          tClosing += int.tryParse(item['closing'].toString()) ?? 0;
+        }
+
+        if (!mounted) return;
+        setState(() {
+          _stockData = fetchedData;
+          _totalOpening = tOpening;
+          _totalPurchase = tPurchase;
+          _totalChallan = tChallan;
+          _totalSale = tSale;
+          _totalClosing = tClosing;
+          _isLoading = false;
+        });
+      } else {
+        if (!mounted) return;
+        setState(() {
+          _errorMessage = 'Failed to load data. Status: ${response.statusCode}';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _errorMessage = 'Failed to connect to the server.';
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,6 +105,19 @@ class _ModelWiseStockScreenState extends State<ModelWiseStockScreen> {
           height: 40,
         ), // Make sure your logo is here
         centerTitle: true,
+        // --- NEW: Refresh Button ---
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            onPressed: () {
+              setState(() {
+                _isLoading = true;
+                _errorMessage = '';
+              });
+              _fetchLiveStockData();
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -122,53 +167,84 @@ class _ModelWiseStockScreenState extends State<ModelWiseStockScreen> {
             ),
           ),
 
-          // 3. The Scrollable List
+          // 3. The Scrollable List (UPDATED FOR LIVE DATA)
           Expanded(
-            child: ListView.separated(
-              itemCount: _mockData.length,
-              separatorBuilder: (context, index) =>
-                  const Divider(height: 1, color: Colors.black12),
-              itemBuilder: (context, index) {
-                final item = _mockData[index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 10,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Model Name (Pink/Red Text)
-                      Text(
-                        item['model'],
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFFD9465B),
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
+            child: _isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+                  )
+                : _errorMessage.isNotEmpty
+                ? Center(
+                    child: Text(
+                      _errorMessage,
+                      style: GoogleFonts.inter(color: Colors.red),
+                    ),
+                  )
+                : _stockData.isEmpty
+                ? Center(
+                    child: Text(
+                      'No data found.',
+                      style: GoogleFonts.inter(color: Colors.grey),
+                    ),
+                  )
+                : ListView.separated(
+                    itemCount: _stockData.length,
+                    separatorBuilder: (context, index) =>
+                        const Divider(height: 1, color: Colors.black12),
+                    itemBuilder: (context, index) {
+                      final item = _stockData[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      // The Numbers
-                      Row(
-                        children: [
-                          _buildNumberCell(item['opening'].toString(), flex: 2),
-                          _buildNumberCell(
-                            item['purchase'].toString(),
-                            flex: 2,
-                          ),
-                          _buildNumberCell(item['challan'].toString(), flex: 2),
-                          _buildNumberCell(item['sale'].toString(), flex: 2),
-                          _buildNumberCell(item['closing'].toString(), flex: 2),
-                        ],
-                      ),
-                    ],
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Model Name (Pink/Red Text)
+                            Text(
+                              item['modelName'] ??
+                                  'Unknown Model', // Changed to match Node.js key
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFFD9465B),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            // The Numbers
+                            Row(
+                              children: [
+                                _buildNumberCell(
+                                  item['opening']?.toString() ?? '0',
+                                  flex: 2,
+                                ),
+                                _buildNumberCell(
+                                  item['purchase']?.toString() ?? '0',
+                                  flex: 2,
+                                ),
+                                _buildNumberCell(
+                                  item['challan']?.toString() ?? '0',
+                                  flex: 2,
+                                ),
+                                _buildNumberCell(
+                                  item['sale']?.toString() ?? '0',
+                                  flex: 2,
+                                ),
+                                _buildNumberCell(
+                                  item['closing']?.toString() ?? '0',
+                                  flex: 2,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
 
-          // 4. The Fixed Footer (Totals)
+          // 4. The Fixed Footer (UPDATED FOR DYNAMIC TOTALS)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             decoration: BoxDecoration(
@@ -186,11 +262,11 @@ class _ModelWiseStockScreenState extends State<ModelWiseStockScreen> {
             ),
             child: Row(
               children: [
-                _buildTotalCell('720', flex: 2),
-                _buildTotalCell('10928', flex: 2),
-                _buildTotalCell('5718', flex: 2),
-                _buildTotalCell('5129', flex: 2),
-                _buildTotalCell('801', flex: 2),
+                _buildTotalCell(_totalOpening.toString(), flex: 2),
+                _buildTotalCell(_totalPurchase.toString(), flex: 2),
+                _buildTotalCell(_totalChallan.toString(), flex: 2),
+                _buildTotalCell(_totalSale.toString(), flex: 2),
+                _buildTotalCell(_totalClosing.toString(), flex: 2),
               ],
             ),
           ),
@@ -216,10 +292,12 @@ class _ModelWiseStockScreenState extends State<ModelWiseStockScreen> {
   }
 
   Widget _buildNumberCell(String text, {required int flex}) {
+    // Treat 'null' string from SQL as '0'
+    final displayText = (text == 'null') ? '0' : text;
     return Expanded(
       flex: flex,
       child: Text(
-        text,
+        displayText,
         textAlign: TextAlign.center,
         style: GoogleFonts.inter(
           fontWeight: FontWeight.w500,

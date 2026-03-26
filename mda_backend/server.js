@@ -174,22 +174,18 @@ app.get('/daily-report', async (req, res) => {
 app.get('/model-wise-stock', async (req, res) => {
     try {
         const pool = await sql.connect(dbConfig);
-        
-        // IMPORTANT: We need your exact SQL query here!
-        // This is a placeholder guessing how your Auto_Misc_Krishna table is structured.
         const result = await pool.request().query(`
             SELECT 
                 F3 AS modelName, 
-                F4 AS opening, 
-                F5 AS purchase, 
-                F6 AS challan, 
-                F7 AS sale, 
-                F8 AS closing 
+                ISNULL(F4, 0) AS opening, 
+                ISNULL(F5, 0) AS purchase, 
+                ISNULL(F6, 0) AS challan, 
+                ISNULL(F7, 0) AS sale, 
+                ISNULL(F8, 0) AS closing 
             FROM Auto_Misc_Krishna 
-            WHERE F2 = 'VehStk_ModelRpt' -- We need the exact F2 string you use for this report
+            WHERE F2 = 'VehStk_Rpt' -- <--- FIXED: Using your actual database name!
               AND F3 IS NOT NULL
         `);
-
         res.json(result.recordset);
     } catch (err) {
         console.error('Database query error:', err);
