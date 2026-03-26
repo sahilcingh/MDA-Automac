@@ -209,14 +209,16 @@ app.get('/challan-pending-report', async (req, res) => {
     try {
         const pool = await sql.connect(dbConfig);
         
-        // Note: Assuming F3 is Customer Name and F4 is the Pending Challan Count
+        // We GROUP BY the Customer Name (F3) and COUNT how many rows they have
         const result = await pool.request().query(`
             SELECT 
                 F3 AS customerName, 
-                ISNULL(F4, 0) AS pendingChallan 
+                COUNT(F3) AS pendingChallan 
             FROM Auto_Misc_Krishna 
             WHERE F2 = 'VehChpend_Rpt' 
               AND F3 IS NOT NULL
+            GROUP BY F3
+            ORDER BY F3
         `);
 
         res.json(result.recordset);
