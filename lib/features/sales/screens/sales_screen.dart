@@ -4,7 +4,8 @@ import 'stock_color_report_screen.dart';
 import 'daily_report_screen.dart';
 import 'model_wise_stock_screen.dart';
 import 'sub_dealer_report_screen.dart';
-import 'challan_pending_screen.dart'; // <--- NEW IMPORT ADDED HERE
+import 'challan_pending_screen.dart';
+import 'financer_report_screen.dart'; // <--- FINAL IMPORT ADDED HERE
 
 class SalesScreen extends StatelessWidget {
   const SalesScreen({Key? key}) : super(key: key);
@@ -131,11 +132,18 @@ class SalesScreen extends StatelessWidget {
                           ),
                         );
                       } else if (index == 4) {
-                        // --- NEW ROUTE FOR CHALLAN PENDING REPORT ---
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => const ChallanPendingScreen(),
+                          ),
+                        );
+                      } else if (index == 5) {
+                        // --- FINANCER REPORT ROUTE WIRED HERE ---
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const FinancerReportScreen(),
                           ),
                         );
                       } else {

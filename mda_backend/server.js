@@ -228,6 +228,29 @@ app.get('/challan-pending-report', async (req, res) => {
     }
 });
 
+// --- NEW ROUTE: FINANCER WISE REPORT ---
+app.get('/financer-report', async (req, res) => {
+    try {
+        const pool = await sql.connect(dbConfig);
+        
+        // F3 = Financer Name, F4 = MTD, F5 = YTD
+        const result = await pool.request().query(`
+            SELECT 
+                F3 AS financerName, 
+                ISNULL(F4, 0) AS mtd, 
+                ISNULL(F5, 0) AS ytd 
+            FROM Auto_Misc_Krishna 
+            WHERE F2 = 'VehFinSales_Rpt' 
+              AND F3 IS NOT NULL
+        `);
+
+        res.json(result.recordset);
+    } catch (err) {
+        console.error('Database query error:', err);
+        res.status(500).json({ error: 'Failed to fetch financer report' });
+    }
+});
+
 // --- APP AUTO-UPDATER ---
 app.get('/check-update', (req, res) => {
     try {
