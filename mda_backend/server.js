@@ -198,14 +198,13 @@ app.get('/model-wise-stock', async (req, res) => {
 });
 
 // --- NEW ROUTE: AUTO-UPDATER ---
+// --- NEW ROUTE: APP AUTO-UPDATER ---
 app.get('/check-update', (req, res) => {
     try {
-        // You can eventually move these to your SQL database, 
-        // but hardcoding it here is the easiest way to manage it for now.
         res.status(200).json({
-            latestVersion: "1.0.1", // Change this whenever you make a new APK!
-            isMandatory: true,      // If true, the user CANNOT close the update popup
-            apkUrl: "https://drive.google.com/uc?export=download&id=1gpCXqaUHP6rWl54238VUQp8XiD6mS4RK", // We will set this up in Step 2
+            latestVersion: "1.0.2", // <-- MUST match the first part of your pubspec.yaml version!
+            isMandatory: true, 
+            apkUrl: "https://drive.google.com/uc?export=download&id=1IMSGsaGNLRFm3XZjemo-A3hpntcY5WfP", // Your new direct link!
             releaseNotes: "• Added Model Wise Stock Report\n• Security upgrades\n• Bug fixes"
         });
     } catch (err) {
