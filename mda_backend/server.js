@@ -180,12 +180,11 @@ app.get('/model-wise-stock', async (req, res) => {
     }
 });
 
-// --- NEW ROUTE: SUB DEALER / BRANCH REPORT ---
+// --- SUB DEALER / BRANCH REPORT ---
 app.get('/sub-dealer-report', async (req, res) => {
     try {
         const pool = await sql.connect(dbConfig);
         
-        // Assuming F3 is Dealer Name, F4 is Challan MTD, etc.
         const result = await pool.request().query(`
             SELECT 
                 F3 AS dealerName, 
@@ -202,6 +201,28 @@ app.get('/sub-dealer-report', async (req, res) => {
     } catch (err) {
         console.error('Database query error:', err);
         res.status(500).json({ error: 'Failed to fetch sub dealer report' });
+    }
+});
+
+// --- NEW ROUTE: CHALLAN PENDING REPORT ---
+app.get('/challan-pending-report', async (req, res) => {
+    try {
+        const pool = await sql.connect(dbConfig);
+        
+        // Note: Assuming F3 is Customer Name and F4 is the Pending Challan Count
+        const result = await pool.request().query(`
+            SELECT 
+                F3 AS customerName, 
+                ISNULL(F4, 0) AS pendingChallan 
+            FROM Auto_Misc_Krishna 
+            WHERE F2 = 'VehChpend_Rpt' 
+              AND F3 IS NOT NULL
+        `);
+
+        res.json(result.recordset);
+    } catch (err) {
+        console.error('Database query error:', err);
+        res.status(500).json({ error: 'Failed to fetch challan pending report' });
     }
 });
 
