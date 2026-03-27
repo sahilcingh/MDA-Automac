@@ -65,20 +65,35 @@ class _StockColorReportScreenState extends State<StockColorReportScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFE0F2FE),
+      // --- UPDATED APPBAR TO MATCH THE NEW BRANDING ---
       appBar: AppBar(
+        toolbarHeight: 110,
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: Color(0xFF1E3A8A),
-            size: 20,
+        leading: Padding(
+          padding: const EdgeInsets.only(top: 24.0),
+          child: IconButton(
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Color(0xFF1E3A8A),
+              size: 20,
+            ),
+            onPressed: () => Navigator.pop(context),
           ),
-          onPressed: () => Navigator.pop(context),
         ),
-        title: Image.asset('assets/mdasoftlogo.png', height: 40),
+        title: Padding(
+          padding: const EdgeInsets.only(top: 24.0),
+          child: SizedBox(
+            height: 80,
+            child: Image.asset(
+              'assets/mdaautomaclogo.png',
+              fit: BoxFit.contain,
+            ),
+          ),
+        ),
       ),
+      // -------------------------------------------------
       body: Column(
         children: [
           // The Blue Info Header

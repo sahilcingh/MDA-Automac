@@ -4,9 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../sales/screens/sales_screen.dart';
 import '../../auth/screens/login_screen.dart';
-import '../../services/update_service.dart'; // --- 1. NEW IMPORT FOR THE UPDATER ---
+import '../../services/update_service.dart';
 
-// --- 2. CHANGED TO STATEFUL WIDGET ---
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
 
@@ -15,24 +14,18 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  // --- 3. NEW: RUN THE UPDATE CHECK ON STARTUP ---
   @override
   void initState() {
     super.initState();
-    // This checks the Node.js server for updates silently in the background
     UpdateService.checkForUpdates(context);
   }
 
-  // --- Secure Logout Function ---
   Future<void> _handleLogout(BuildContext context) async {
-    // 1. Grab the local memory
     final prefs = await SharedPreferences.getInstance();
 
-    // 2. Wipe the login badges
     await prefs.remove('isLoggedIn');
     await prefs.remove('userName');
 
-    // 3. Kick the user back to the Login Screen
     if (!context.mounted) return;
     Navigator.pushReplacement(
       context,
@@ -45,24 +38,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFE0F2FE),
       appBar: AppBar(
+        toolbarHeight: 110,
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        // (We removed the back button since this is the main dashboard)
         leading: const SizedBox(),
-        title: SizedBox(
-          height: 40,
-          child: Image.asset('assets/mdasoftlogo.png'),
+        title: Padding(
+          padding: const EdgeInsets.only(top: 24.0),
+          child: SizedBox(
+            height: 80,
+            child: Image.asset(
+              'assets/mdaautomaclogo.png',
+              fit: BoxFit.contain,
+            ),
+          ),
         ),
-        // --- Log Out Button in the top right ---
         actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.logout_rounded,
-              color: Color(0xFFEF4444),
-            ), // Red logout icon
-            tooltip: 'Log Out',
-            onPressed: () => _handleLogout(context),
+          Padding(
+            padding: const EdgeInsets.only(top: 24.0),
+            child: IconButton(
+              icon: const Icon(
+                Icons.logout_rounded,
+                color: Color(0xFFEF4444),
+                size: 28,
+              ),
+              tooltip: 'Log Out',
+              onPressed: () => _handleLogout(context),
+            ),
           ),
           const SizedBox(width: 8),
         ],
@@ -73,27 +75,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 32),
-              Text(
-                'Select Report',
-                style: GoogleFonts.plusJakartaSans(
-                  color: const Color(0xFF1E3A8A),
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '',
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF475569),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  height: 1.5,
-                ),
-              ),
-              const SizedBox(height: 40),
+              // --- INCREASED THIS HEIGHT FROM 32 TO 72 TO PUSH CARDS DOWN ---
+              const SizedBox(height: 72),
 
               Expanded(
                 child: ListView(

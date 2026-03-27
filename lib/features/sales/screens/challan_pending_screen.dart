@@ -68,23 +68,49 @@ class _ChallanPendingScreenState extends State<ChallanPendingScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
+
+      // --- UPDATED APPBAR ---
       appBar: AppBar(
+        toolbarHeight: 110, // Expanded height for consistency
         backgroundColor: Colors.white,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFF1E3A8A)),
-        // Replaced text title with your logo to match the other screens
-        title: Image.asset('assets/mdasoftlogo.png', height: 36),
         centerTitle: true,
+        leading: Padding(
+          padding: const EdgeInsets.only(top: 24.0),
+          child: IconButton(
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Color(0xFF1E3A8A),
+              size: 20,
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        title: Padding(
+          padding: const EdgeInsets.only(top: 24.0),
+          child: SizedBox(
+            height: 80,
+            child: Image.asset(
+              'assets/mdaautomaclogo.png', // Replaced with new logo
+              fit: BoxFit.contain,
+            ),
+          ),
+        ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF1E3A8A)),
-            onPressed: () {
-              setState(() {
-                _isLoading = true;
-                _errorMessage = '';
-              });
-              _fetchLiveReportData();
-            },
+          Padding(
+            padding: const EdgeInsets.only(
+              top: 24.0,
+            ), // Aligned the refresh button
+            child: IconButton(
+              icon: const Icon(Icons.refresh_rounded, color: Color(0xFF1E3A8A)),
+              onPressed: () {
+                setState(() {
+                  _isLoading = true;
+                  _errorMessage = '';
+                });
+                _fetchLiveReportData();
+              },
+            ),
           ),
         ],
         bottom: PreferredSize(
@@ -92,9 +118,11 @@ class _ChallanPendingScreenState extends State<ChallanPendingScreen> {
           child: Container(color: const Color(0xFFE2E8F0), height: 1.0),
         ),
       ),
+
+      // ----------------------
       body: Column(
         children: [
-          // 1. Sleek Blue Date Header (Matches Financer/Model Screens)
+          // 1. Sleek Blue Date Header
           Container(
             color: const Color(0xFF1E3A8A),
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -198,7 +226,7 @@ class _ChallanPendingScreenState extends State<ChallanPendingScreen> {
                       return Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 20,
-                          vertical: 14, // Adjusted padding to match others
+                          vertical: 14,
                         ),
                         decoration: BoxDecoration(
                           color: isEven
@@ -221,13 +249,12 @@ class _ChallanPendingScreenState extends State<ChallanPendingScreen> {
                                 item['customerName'] ?? 'UNKNOWN CUSTOMER',
                                 style: GoogleFonts.plusJakartaSans(
                                   color: const Color(0xFF0F172A),
-                                  fontWeight: FontWeight
-                                      .w700, // Matched font weight to others
+                                  fontWeight: FontWeight.w700,
                                   fontSize: 13,
                                 ),
                               ),
                             ),
-                            // Pending Amount (Keeping the Highlighted Blue)
+                            // Pending Amount
                             Expanded(
                               flex: 1,
                               child: Text(

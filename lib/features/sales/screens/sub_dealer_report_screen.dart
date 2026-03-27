@@ -80,22 +80,49 @@ class _SubDealerReportScreenState extends State<SubDealerReportScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
+
+      // --- UPDATED APPBAR TO MATCH BRANDING ---
       appBar: AppBar(
+        toolbarHeight: 110, // Expanded height
         backgroundColor: Colors.white,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFF1E3A8A)),
-        title: Image.asset('assets/mdasoftlogo.png', height: 36),
         centerTitle: true,
+        leading: Padding(
+          padding: const EdgeInsets.only(top: 24.0),
+          child: IconButton(
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Color(0xFF1E3A8A),
+              size: 20,
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        title: Padding(
+          padding: const EdgeInsets.only(top: 24.0),
+          child: SizedBox(
+            height: 80,
+            child: Image.asset(
+              'assets/mdaautomaclogo.png', // Replaced with new logo
+              fit: BoxFit.contain,
+            ),
+          ),
+        ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF1E3A8A)),
-            onPressed: () {
-              setState(() {
-                _isLoading = true;
-                _errorMessage = '';
-              });
-              _fetchLiveReportData();
-            },
+          Padding(
+            padding: const EdgeInsets.only(
+              top: 24.0,
+            ), // Aligned the refresh button
+            child: IconButton(
+              icon: const Icon(Icons.refresh_rounded, color: Color(0xFF1E3A8A)),
+              onPressed: () {
+                setState(() {
+                  _isLoading = true;
+                  _errorMessage = '';
+                });
+                _fetchLiveReportData();
+              },
+            ),
           ),
         ],
         bottom: PreferredSize(
@@ -103,6 +130,8 @@ class _SubDealerReportScreenState extends State<SubDealerReportScreen> {
           child: Container(color: const Color(0xFFE2E8F0), height: 1.0),
         ),
       ),
+
+      // ----------------------------------------
       body: Column(
         children: [
           // 1. Sleek Date Header

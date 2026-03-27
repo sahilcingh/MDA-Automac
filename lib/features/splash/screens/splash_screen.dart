@@ -151,7 +151,7 @@ class _SplashScreenState extends State<SplashScreen>
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16.0),
                           child: Text(
-                            'INTELLIGENT WORKFLOW ENGINE',
+                            '',
                             style: GoogleFonts.inter(
                               color: const Color(0xFF1E3A8A).withOpacity(0.8),
                               fontSize: 11,

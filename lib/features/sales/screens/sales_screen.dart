@@ -5,7 +5,7 @@ import 'daily_report_screen.dart';
 import 'model_wise_stock_screen.dart';
 import 'sub_dealer_report_screen.dart';
 import 'challan_pending_screen.dart';
-import 'financer_report_screen.dart'; // <--- FINAL IMPORT ADDED HERE
+import 'financer_report_screen.dart';
 
 class SalesScreen extends StatelessWidget {
   const SalesScreen({Key? key}) : super(key: key);
@@ -48,23 +48,29 @@ class SalesScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFE0F2FE),
       appBar: AppBar(
+        toolbarHeight: 110,
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: Color(0xFF1E3A8A),
-            size: 20,
+        leading: Padding(
+          padding: const EdgeInsets.only(top: 24.0),
+          child: IconButton(
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Color(0xFF1E3A8A),
+              size: 20,
+            ),
+            onPressed: () => Navigator.pop(context),
           ),
-          onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
-          'Sales Workspace',
-          style: GoogleFonts.plusJakartaSans(
-            color: const Color(0xFF1E3A8A),
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
+        title: Padding(
+          padding: const EdgeInsets.only(top: 24.0),
+          child: SizedBox(
+            height: 80,
+            child: Image.asset(
+              'assets/mdaautomaclogo.png',
+              fit: BoxFit.contain,
+            ),
           ),
         ),
       ),
@@ -139,7 +145,6 @@ class SalesScreen extends StatelessWidget {
                           ),
                         );
                       } else if (index == 5) {
-                        // --- FINANCER REPORT ROUTE WIRED HERE ---
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -200,17 +205,25 @@ class SalesScreen extends StatelessWidget {
                   child: Icon(icon, color: iconColor, size: 24),
                 ),
                 const SizedBox(width: 16),
+
+                // --- THE FIX IS RIGHT HERE ---
                 Expanded(
-                  child: Text(
-                    title,
-                    style: GoogleFonts.plusJakartaSans(
-                      color: const Color(0xFF1E293B),
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      height: 1.3,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown, // Shrinks text if it's too long
+                    alignment: Alignment.centerLeft, // Keeps it left-aligned
+                    child: Text(
+                      title,
+                      style: GoogleFonts.plusJakartaSans(
+                        color: const Color(0xFF1E293B),
+                        fontSize: 13.5, // Reduced from 15
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
+
+                // -----------------------------
+                const SizedBox(width: 12),
                 const Icon(
                   Icons.arrow_forward_ios_rounded,
                   color: Color(0xFFCBD5E1),

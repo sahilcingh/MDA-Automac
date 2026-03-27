@@ -142,7 +142,8 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // --- NEW: THE FORGOT PASSWORD DIALOG SYSTEM ---
+  // --- THE FORGOT PASSWORD DIALOG SYSTEM (COMMENTED OUT FOR NOW) ---
+  /*
   void _showForgotPasswordDialog() {
     final resetClientIdController = TextEditingController(
       text: _clientIdController.text,
@@ -212,8 +213,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       ? null
                       : () async {
                           if (resetClientIdController.text.isEmpty ||
-                              resetUserNameController.text.isEmpty)
+                              resetUserNameController.text.isEmpty) {
                             return;
+                          }
 
                           setState(() => isResetting = true);
 
@@ -290,6 +292,7 @@ class _LoginScreenState extends State<LoginScreen> {
       },
     );
   }
+  */
   // ----------------------------------------------
 
   Future<String> _getUniqueDeviceId() async {
@@ -386,26 +389,18 @@ class _LoginScreenState extends State<LoginScreen> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 60),
+              const SizedBox(height: 80), // Adjusted top spacing
+              // --- LOGO IMAGE ---
               SizedBox(
-                height: 80,
+                height: 120,
                 child: FittedBox(
                   fit: BoxFit.contain,
-                  child: Image.asset('assets/mdasoftlogo.png'),
+                  child: Image.asset('assets/mdaautomaclogo.png'),
                 ),
               ),
-              const SizedBox(height: 40),
-              Text(
-                'Welcome Back',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.plusJakartaSans(
-                  color: const Color(0xFF1E3A8A),
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              const SizedBox(height: 48),
+              const SizedBox(
+                height: 60,
+              ), // Replaced 'Welcome Back' with balanced spacing
 
               _buildTextField(
                 controller: _clientIdController,
@@ -426,12 +421,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 isPassword: true,
               ),
 
+              // --- FORGOT PASSWORD BUTTON (COMMENTED OUT FOR NOW) ---
+              /*
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: _isLoading
                       ? null
-                      : _showForgotPasswordDialog, // --- WIRED UP THE BUTTON ---
+                      : _showForgotPasswordDialog, 
                   child: Text(
                     'Forgot Password?',
                     style: GoogleFonts.inter(
@@ -442,7 +439,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              */
+              const SizedBox(
+                height: 32,
+              ), // Retained spacing so the layout doesn't collapse
 
               ElevatedButton(
                 onPressed: _isLoading ? null : _handleLogin,

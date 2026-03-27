@@ -66,20 +66,37 @@ class _DailyReportScreenState extends State<DailyReportScreen> {
       length: 2, // 2 Tabs: Challan and Sales
       child: Scaffold(
         backgroundColor: const Color(0xFFE0F2FE),
+
+        // --- UPDATED APPBAR TO MATCH DASHBOARD & SALES SCREENS ---
         appBar: AppBar(
+          toolbarHeight: 110,
           backgroundColor: Colors.transparent,
           elevation: 0,
           centerTitle: true,
-          leading: IconButton(
-            icon: const Icon(
-              Icons.arrow_back_ios_new_rounded,
-              color: Color(0xFF1E3A8A),
-              size: 20,
+          leading: Padding(
+            padding: const EdgeInsets.only(top: 24.0),
+            child: IconButton(
+              icon: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: Color(0xFF1E3A8A),
+                size: 20,
+              ),
+              onPressed: () => Navigator.pop(context),
             ),
-            onPressed: () => Navigator.pop(context),
           ),
-          title: Image.asset('assets/mdasoftlogo.png', height: 40),
+          title: Padding(
+            padding: const EdgeInsets.only(top: 24.0),
+            child: SizedBox(
+              height: 80,
+              child: Image.asset(
+                'assets/mdaautomaclogo.png', // <--- NEW LOGO
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
         ),
+
+        // ---------------------------------------------------------
         body: Column(
           children: [
             // The Blue Info Header
@@ -119,7 +136,7 @@ class _DailyReportScreenState extends State<DailyReportScreen> {
               ),
             ),
 
-            // --- FIX: Tab Bar (Shortened text, strict indicator size) ---
+            // Tab Bar
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
@@ -127,8 +144,7 @@ class _DailyReportScreenState extends State<DailyReportScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: TabBar(
-                indicatorSize: TabBarIndicatorSize
-                    .tab, // Ensures pill stretches to fill space
+                indicatorSize: TabBarIndicatorSize.tab,
                 indicator: BoxDecoration(
                   color: const Color(0xFF1E3A8A),
                   borderRadius: BorderRadius.circular(12),
@@ -140,7 +156,7 @@ class _DailyReportScreenState extends State<DailyReportScreen> {
                   fontSize: 14,
                 ),
                 tabs: const [
-                  Tab(text: 'CHALLAN'), // Shortened for a cleaner fit
+                  Tab(text: 'CHALLAN'),
                   Tab(text: 'SALES'),
                 ],
               ),
@@ -266,13 +282,13 @@ class _DailyReportScreenState extends State<DailyReportScreen> {
             padding: const EdgeInsets.all(16.0),
             child: Row(
               children: [
-                // Column 1: Labels (Slightly smaller flex to give numbers more room)
+                // Column 1: Labels
                 Expanded(
                   flex: 2,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 24), // Space for header alignment
+                      const SizedBox(height: 24),
                       Text('Quantity', style: _labelStyle()),
                       const SizedBox(height: 16),
                       Text('Value', style: _labelStyle()),
@@ -280,7 +296,6 @@ class _DailyReportScreenState extends State<DailyReportScreen> {
                   ),
                 ),
 
-                // --- FIX: Given more flex space and Wrapped values in FittedBox ---
                 // Column 2: Current Year
                 Expanded(
                   flex: 4,
@@ -299,9 +314,7 @@ class _DailyReportScreenState extends State<DailyReportScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(
-                  width: 12,
-                ), // Adds a safe buffer between the two giant numbers
+                const SizedBox(width: 12),
                 // Column 3: Previous Year
                 Expanded(
                   flex: 4,
