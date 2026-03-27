@@ -255,10 +255,10 @@ app.get('/financer-report', async (req, res) => {
 app.get('/check-update', (req, res) => {
     try {
         res.status(200).json({
-            latestVersion: "1.0.4", // Ensures the app knows this is the new version
-            isMandatory: true,      // Forces the user to update to get the new UI
-            apkUrl: "https://drive.google.com/uc?export=download&id=1w1rT9l9vGZfd53zWu7H6XVDZcec8MtMR", // <--- Your new direct link!
-            releaseNotes: "• Complete UI/UX Redesign\n• New MDA Automac Branding\n• Sub Dealer & Financer Reports added\n• Performance improvements"
+            latestVersion: "1.0.4", // App will now look for 1.0.4
+            isMandatory: true, 
+            apkUrl: "https://drive.google.com/uc?export=download&id=1nvz6VVmS6OD58WAH2gacD-1qctWT2ol8", // Your brand new direct link!
+            releaseNotes: "• Complete UI/UX Redesign\n• New MDA Automac Branding\n• Version number added to Login"
         });
     } catch (err) {
         res.status(500).json({ error: 'Failed to check for updates' });
